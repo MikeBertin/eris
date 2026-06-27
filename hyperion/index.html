@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hyperion — The Tumbling Moon</title>
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://mikebertin.github.io/eris/hyperion/">
+<meta property="og:title" content="Hyperion, the Tumbling Moon — Eris">
+<meta property="og:description" content="Saturn's moon Hyperion rotates chaotically — it has no fixed day. Simulate its spin-orbit dynamics and build the Poincaré section that proves the chaos. From the Eris chaos playground.">
+<meta property="og:image" content="https://mikebertin.github.io/eris/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://mikebertin.github.io/eris/og.png">
+<style>
+  :root{
+    --bg:#0a0a0f; --panel:#13131c; --line:#23232f;
+    --ink:#e7e7ef; --muted:#8a8a9c; --accent:#ffd479; --accent2:#7cc4ff;
+    --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:radial-gradient(1200px 800px at 70% -10%,#1a1610,#0a0a0f 60%);
+    color:var(--ink);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  .page{max-width:1080px;margin:0 auto;padding:30px 28px 44px}
+  .hero{margin-bottom:22px}
+  .back{display:inline-block;color:var(--muted);text-decoration:none;font-size:12.5px;margin-bottom:12px}
+  .back:hover{color:var(--accent)}
+  h1{font-size:25px;margin:0 0 7px;letter-spacing:-.2px}
+  .sub{color:var(--muted);font-size:13.5px;margin:0;line-height:1.55;max-width:830px}
+  .sub b{color:var(--accent);font-weight:600}
+
+  .cols{display:flex;gap:22px;align-items:flex-start}
+  @media (max-width:900px){.cols{flex-direction:column;align-items:center}}
+  .col-left{flex:0 0 auto;display:flex;flex-direction:column;gap:14px}
+  .col-right{flex:1 1 330px;min-width:300px;max-width:430px;display:flex;flex-direction:column;gap:14px}
+
+  .stage{position:relative}
+  canvas#orbit{
+    display:block;width:min(58vh,520px);height:min(58vh,520px);
+    background:radial-gradient(420px 420px at 50% 46%,#0c0e16,#06070b 70%);
+    border:1px solid var(--line);border-radius:10px;
+    box-shadow:0 18px 60px -20px #000,0 0 0 1px #000 inset;
+  }
+  .verdict{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;
+    border:1px solid var(--line);background:var(--panel);font-size:13.5px}
+  .dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto;background:var(--muted)}
+  .verdict b{font-weight:600}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .row{display:flex;gap:8px}
+  button{
+    flex:1;cursor:pointer;border:1px solid var(--line);background:#1c1c28;color:var(--ink);
+    font:inherit;font-size:13px;padding:9px 10px;border-radius:8px;transition:.12s;
+  }
+  button:hover{background:#262636;border-color:#34344a}
+  button.primary{background:var(--accent);color:#2a1d04;border-color:transparent;font-weight:600}
+  button.primary:hover{background:#ffe2a3}
+
+  label{display:block;margin-top:14px;font-size:12px;color:var(--muted)}
+  label .val{float:right;color:var(--ink);font-family:var(--mono)}
+  input[type=range]{width:100%;margin-top:7px;accent-color:var(--accent)}
+  .seg{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+  .seg button{padding:6px 8px;font-size:11.5px;flex:1 1 auto}
+  .ctrls{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;margin-top:4px}
+  .ctrl{min-width:0}
+  .ctrl.span{grid-column:1 / -1}
+  .ctrl label{margin-top:12px}
+
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 14px}
+  .stat .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+  .stat .v{font-family:var(--mono);font-size:18px;margin-top:2px}
+  .ptitle{font-size:12px;color:var(--muted);margin:0 0 8px}
+  .ptitle b{color:var(--ink);font-weight:600}
+  canvas#sec{width:100%;height:auto;display:block;margin-top:4px;border-radius:8px;background:#0b0b12;border:1px solid var(--line);cursor:crosshair}
+  .hint{color:var(--muted);font-size:11.5px;margin-top:12px;line-height:1.5}
+  kbd{font-family:var(--mono);background:#1c1c28;border:1px solid var(--line);border-bottom-width:2px;
+    border-radius:5px;padding:1px 6px;font-size:11px;color:var(--ink)}
+
+  .notice{margin-top:28px;border-top:1px solid var(--line);padding-top:22px}
+  .notice-title{font-size:12px;text-transform:uppercase;letter-spacing:1.6px;color:var(--muted);margin:0 0 14px;font-weight:600}
+  .notice-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:760px){.notice-grid{grid-template-columns:1fr}}
+  .ncard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 16px}
+  .ncard h3{margin:0 0 7px;font-size:14px;font-weight:600}
+  .ncard p{margin:0 0 11px;color:var(--muted);font-size:12.5px;line-height:1.5}
+  .ncard .why{font-size:12.5px;font-weight:600}
+
+  .x{color:var(--accent);border-bottom:1px dotted currentColor;cursor:help;white-space:nowrap}
+  .x::after{content:'ⓘ';font-size:.7em;vertical-align:.35em;margin-left:1px;opacity:.7}
+  .x:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+  #pop{position:fixed;z-index:60;max-width:305px;background:#15151f;border:1px solid #2e2e3e;
+    border-radius:12px;padding:13px 15px;box-shadow:0 22px 55px -16px #000,0 0 0 1px #000;
+    font-size:13px;line-height:1.55;visibility:hidden;opacity:0;transform:translateY(4px);
+    pointer-events:none;transition:opacity .13s,transform .13s}
+  #pop.show{visibility:visible;opacity:1;transform:none;pointer-events:auto}
+  #pop h4{margin:0 0 7px;font-size:13.5px;color:var(--accent)}
+  #pop p{margin:0 0 8px}#pop p:last-child{margin:0}
+  #pop b{color:var(--ink);font-weight:600}
+  #pop .muted{color:var(--muted);font-size:12px}
+  #pop .eq{font-family:var(--mono);background:#0e0e16;border:1px solid var(--line);border-radius:7px;
+    padding:8px 10px;margin:9px 0;font-size:12.5px;text-align:center;color:#e6ebff}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="hero">
+    <a class="back" href="../">← Eris</a>
+    <h1>Hyperion — The Tumbling Moon</h1>
+    <p class="sub">
+      Saturn's moon <b>Hyperion</b> is shaped like a battered potato and rides a stretched orbit — and as a
+      result it has <b>no fixed day</b>. Its rotation is genuinely <span class="x" data-pop="chaos">chaotic</span>:
+      gravity wrenches its long axis around unpredictably, tumbling end over end. Below, the moon orbits and
+      spins on the left; on the right, a <span class="x" data-pop="poincare">Poincaré section</span> records its
+      orientation once per orbit. <b>Click the section to drop new trajectories</b> and map the chaos.
+    </p>
+  </header>
+
+  <div class="cols">
+    <div class="col-left">
+      <div class="stage"><canvas id="orbit"></canvas></div>
+      <div class="verdict"><span class="dot" id="vdot"></span><span id="vtext">—</span></div>
+      <div class="panel">
+        <div class="row">
+          <button id="play" class="primary">Pause</button>
+          <button id="map">Map the section</button>
+        </div>
+        <div class="ctrls">
+          <div class="ctrl">
+            <label>Orbit eccentricity e <span class="val" id="eV"></span></label>
+            <input type="range" id="e" min="0" max="0.4" step="0.005" value="0.1">
+          </div>
+          <div class="ctrl">
+            <label><span class="x" data-pop="aspher">Asphericity</span> α <span class="val" id="aV"></span></label>
+            <input type="range" id="a" min="0" max="1" step="0.01" value="0.89">
+          </div>
+          <div class="ctrl span">
+            <label>Animation speed <span class="val" id="spV"></span></label>
+            <input type="range" id="speed" min="1" max="24" value="8">
+          </div>
+          <div class="ctrl span">
+            <label>Scenario</label>
+            <div class="seg" id="presets">
+              <button data-e="0.1" data-a="0.89" data-w="1.5">Hyperion (real)</button>
+              <button data-e="0.02" data-a="0.4" data-w="1.0">Tidally locked</button>
+              <button data-e="0.25" data-a="0.95" data-w="1.6">Wild tumble</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-right">
+      <div class="panel">
+        <div class="stats">
+          <div class="stat"><div class="k">Spin θ′ / n</div><div class="v" id="sSpin">—</div></div>
+          <div class="stat"><div class="k">Orbits</div><div class="v" id="sOrb">0</div></div>
+          <div class="stat"><div class="k">Lyapunov λ</div><div class="v" id="sLam">—</div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <p class="ptitle"><b class="x" data-pop="poincare" style="font-weight:600">Poincaré section</b>
+          &nbsp;orientation θ vs spin θ′, sampled at perihelion</p>
+        <canvas id="sec" width="370" height="270"></canvas>
+        <div class="row" style="margin-top:10px">
+          <button id="clearSec">Clear section</button>
+          <button id="reseed">Re-drop moon</button>
+        </div>
+        <div class="hint">
+          Each orbit adds one dot for the live moon (white). <b style="color:var(--ink)">Click anywhere</b> to
+          launch a fresh trajectory from that state. Smooth loops = orderly spin; a haze of scattered dots =
+          the <b style="color:var(--ink)">chaotic sea</b>. "Map the section" seeds a whole grid at once.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="notice">
+    <h2 class="notice-title">Things to notice</h2>
+    <div class="notice-grid">
+      <div class="ncard">
+        <h3>Islands in a sea</h3>
+        <p>Map the section and a structure appears: closed loops (locked rotations) marooned inside a grey fog of chaotic points where spin is unpredictable.</p>
+        <span class="x why" data-pop="islands">Order and chaos together</span>
+      </div>
+      <div class="ncard">
+        <h3>Make it a real moon</h3>
+        <p>Drag eccentricity toward 0 or asphericity down: the fog clears and the loops take over. A round moon on a circular orbit just spins steadily.</p>
+        <span class="x why" data-pop="tidal">Why most moons don't tumble</span>
+      </div>
+      <div class="ncard">
+        <h3>Voyager saw it for real</h3>
+        <p>This isn't a toy result — Hyperion's chaotic rotation was predicted in 1984 and confirmed by Voyager 2 and later Cassini imaging.</p>
+        <span class="x why" data-pop="real">The actual moon</span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+const TAU=Math.PI*2;
+// ===================== orbit (Kepler) lookup tables =====================
+const TABN=4096;
+let ecc=0.1;
+let xTab=new Float64Array(TABN), yTab=new Float64Array(TABN);   // moon pos /a, focus at origin
+let gTab=new Float64Array(TABN), c2Tab=new Float64Array(TABN), s2Tab=new Float64Array(TABN);
+function kepler(M,e){ let E=M; for(let i=0;i<10;i++){ const d=(E-e*Math.sin(E)-M)/(1-e*Math.cos(E)); E-=d; if(Math.abs(d)<1e-13)break; } return E; }
+function buildTables(){
+  for(let i=0;i<TABN;i++){
+    const M=TAU*i/TABN, E=kepler(M,ecc);
+    const r=1-ecc*Math.cos(E);
+    const f=Math.atan2(Math.sqrt(1-ecc*ecc)*Math.sin(E), Math.cos(E)-ecc);
+    xTab[i]=r*Math.cos(f); yTab[i]=r*Math.sin(f);
+    gTab[i]=1/(r*r*r); c2Tab[i]=Math.cos(2*f); s2Tab[i]=Math.sin(2*f);
+  }
+}
+function sampleAt(t){                                   // returns {g,c2,s2,x,y} via linear interp on phase
+  let ph=t/TAU; ph-=Math.floor(ph); const p=ph*TABN;
+  const i0=Math.floor(p)%TABN, fr=p-Math.floor(p), i1=(i0+1)%TABN, j=1-fr;
+  return { g:gTab[i0]*j+gTab[i1]*fr, c2:c2Tab[i0]*j+c2Tab[i1]*fr, s2:s2Tab[i0]*j+s2Tab[i1]*fr,
+           x:xTab[i0]*j+xTab[i1]*fr, y:yTab[i0]*j+yTab[i1]*fr };
+}
+// spin-orbit torque:  θ'' = -(α²/2)(1/r³) sin(2(θ−f))   [ω0=1, a=1]
+let alpha2=0.89*0.89;
+function accel(th,t){ const s=sampleAt(t);
+  return -0.5*alpha2*s.g*(Math.sin(2*th)*s.c2 - Math.cos(2*th)*s.s2); }
+function rk4(th,w,t,dt){
+  const a1=accel(th,t);
+  const th2=th+0.5*dt*w,        w2=w+0.5*dt*a1, a2=accel(th2,t+0.5*dt);
+  const th3=th+0.5*dt*w2,       w3=w+0.5*dt*a2, a3=accel(th3,t+0.5*dt);
+  const th4=th+dt*w3,           w4=w+dt*a3,     a4=accel(th4,t+dt);
+  return [ th+dt/6*(w+2*w2+2*w3+w4), w+dt/6*(a1+2*a2+2*a3+a4) ];
+}
+
+// ===================== Poincaré section canvas =====================
+const sec=document.getElementById('sec'), sx=sec.getContext('2d');
+const SW=370, SH=270, sml=34, smr=8, smt=10, smb=22;
+const TH0=0, TH1=Math.PI, WMIN=-0.6, WMAX=2.6;
+const SX=th=> sml+(th-TH0)/(TH1-TH0)*(SW-sml-smr);
+const SY=w=> smt+(WMAX-w)/(WMAX-WMIN)*(SH-smt-smb);
+function drawSecAxes(){
+  sx.clearRect(0,0,SW,SH);
+  sx.fillStyle='#0b0b12'; sx.fillRect(0,0,SW,SH);
+  sx.strokeStyle='#2a2a38'; sx.lineWidth=1;
+  sx.beginPath(); sx.moveTo(sml,smt); sx.lineTo(sml,SH-smb); sx.lineTo(SW-smr,SH-smb); sx.stroke();
+  sx.fillStyle='#6b6b80'; sx.font='10px ui-monospace,monospace';
+  // y gridlines at integer spin rates (resonances)
+  for(let w=0;w<=2;w++){ const Y=SY(w);
+    sx.strokeStyle=w===1?'#33405a':'#181822'; sx.setLineDash(w===1?[3,3]:[]);
+    sx.beginPath(); sx.moveTo(sml,Y); sx.lineTo(SW-smr,Y); sx.stroke(); sx.setLineDash([]);
+    sx.fillStyle=w===1?'#7cc4ff':'#6b6b80'; sx.fillText(w, 16, Y+3); }
+  sx.fillStyle='#6b6b80';
+  sx.fillText('0', sml-4, SH-smb+12); sx.fillText('π', SW-smr-6, SH-smb+12);
+  sx.fillText("θ′/n", 8, smt+2); sx.fillText('θ (mod π)', SW/2-22, SH-4);
+}
+function plotPt(th,w,color,size){
+  let t=((th%Math.PI)+Math.PI)%Math.PI;
+  if(w<WMIN||w>WMAX) return;
+  sx.fillStyle=color; sx.beginPath(); sx.arc(SX(t),SY(w),size||1.1,0,TAU); sx.fill();
+}
+
+// background section integrators (progressive fill)
+const PALETTE=['#7cc4ff','#9ae66e','#ff9ec4','#c792ff','#ffb86b','#5fd0c5','#f06b6b','#a0e0ff'];
+let jobs=[]; let palIdx=0;
+const SECN=600, SECDT=TAU/600;                    // steps per orbit for section integrators
+function seedJob(th,w,orbits,color){
+  jobs.push({th,w,t:0,left:orbits,color:color||PALETTE[(palIdx++)%PALETTE.length]});
+}
+function runJobs(){
+  let budget=10;                                   // orbits processed per frame across all jobs
+  for(let q=0;q<jobs.length && budget>0;q++){
+    const J=jobs[q]; const todo=Math.min(J.left, Math.max(1,Math.floor(budget/ Math.max(1,jobs.length))) , 4);
+    for(let o=0;o<todo;o++){
+      for(let s=0;s<SECN;s++){ const r=rk4(J.th,J.w,J.t,SECDT); J.th=r[0]; J.w=r[1]; J.t+=SECDT; }
+      plotPt(J.th,J.w,J.color,1.1); J.left--; budget--;
+      if(J.left<=0) break;
+    }
+  }
+  jobs=jobs.filter(J=>J.left>0);
+}
+function mapSection(){
+  jobs=[]; palIdx=0; drawSecAxes(); replotLive();
+  const NT=10, NW=5;
+  for(let i=0;i<NT;i++) for(let k=0;k<NW;k++){
+    const th=TH0+(i+0.5)/NT*(TH1-TH0);
+    const w=WMIN+(k+0.5)/NW*(WMAX-WMIN);
+    seedJob(th,w,260);
+  }
+}
+
+// live moon's accumulated section points (white), kept so we can replot on clear
+let liveSecPts=[];
+function replotLive(){ liveSecPts.forEach(p=>plotPt(p[0],p[1],'rgba(255,255,255,0.9)',1.4)); }
+
+sec.addEventListener('click',e=>{
+  const rect=sec.getBoundingClientRect();
+  const cx=(e.clientX-rect.left)/rect.width*SW, cy=(e.clientY-rect.top)/rect.height*SH;
+  const th=TH0+(cx-sml)/(SW-sml-smr)*(TH1-TH0);
+  const w=WMAX-(cy-smt)/(SH-smt-smb)*(WMAX-WMIN);
+  if(th<TH0-0.1||th>TH1+0.1) return;
+  seedJob(th,w,260);
+});
+
+// ===================== live moon (orbit view + integration) =====================
+const oc=document.getElementById('orbit'), ox=oc.getContext('2d');
+const OS=520; oc.width=oc.height=OS; const CX=OS/2, CY=OS*0.47;
+let scale=160;
+function setScale(){ scale=(OS/2-46)/(1+ecc); }
+
+let th=0.2, w=1.0, tt=0;                  // live state
+let thS=0.2+1e-6, wS=1.0, sepLamSum=0, sepOrbits=0, lamEst=NaN;  // shadow for Lyapunov
+const D0=1e-6;
+let orbits=0, prevPh=0;
+let trail=[];                              // recent moon positions for a fading path
+let perHist=[];                            // recent θ′ at perihelion for spin readout
+
+const LIVEN=720; const LIVEDT=TAU/LIVEN;
+let perFrame=8;
+
+function resetMoon(w0){
+  th=0.3; w=(w0!=null?w0:1.0); tt=0; orbits=0; prevPh=0;
+  thS=th+D0; wS=w; sepLamSum=0; sepOrbits=0; lamEst=NaN;
+  trail=[]; perHist=[];
+}
+
+function focusPos(){ return [CX+ecc*scale, CY]; }      // focus (Saturn) offset so ellipse is centred
+function moonScreen(s){ const [fx,fy]=focusPos(); return [fx+s.x*scale, fy - s.y*scale]; }
+
+function drawOrbitScene(){
+  ox.clearRect(0,0,OS,OS);
+  // orbit path
+  const [fx,fy]=focusPos();
+  ox.strokeStyle='#2a2a38'; ox.lineWidth=1.2; ox.beginPath();
+  for(let i=0;i<=TABN;i+=8){ const ii=i%TABN; const X=fx+xTab[ii]*scale, Y=fy-yTab[ii]*scale;
+    i?ox.lineTo(X,Y):ox.moveTo(X,Y); } ox.closePath(); ox.stroke();
+  // perihelion marker (where the section is sampled)
+  { const X=fx+xTab[0]*scale, Y=fy-yTab[0]*scale;
+    ox.strokeStyle='rgba(124,196,255,0.5)'; ox.setLineDash([3,3]);
+    ox.beginPath(); ox.arc(X,Y,9,0,TAU); ox.stroke(); ox.setLineDash([]);
+    ox.fillStyle='#5a6a80'; ox.font='10px ui-monospace,monospace'; ox.fillText('perihelion',X+12,Y+4); }
+  // Saturn
+  ox.save(); ox.translate(fx,fy);
+  const grd=ox.createRadialGradient(-6,-6,2,0,0,20); grd.addColorStop(0,'#ffe6ad'); grd.addColorStop(1,'#caa24e');
+  ox.fillStyle=grd; ox.beginPath(); ox.arc(0,0,15,0,TAU); ox.fill();
+  ox.strokeStyle='rgba(255,222,150,0.55)'; ox.lineWidth=2.4; ox.save(); ox.rotate(-0.42); ox.scale(1,0.32);
+  ox.beginPath(); ox.arc(0,0,26,0,TAU); ox.stroke(); ox.restore(); ox.restore();
+  // moon trail
+  for(let i=0;i<trail.length;i++){ const a=i/trail.length;
+    ox.fillStyle=`rgba(255,212,121,${0.04+0.10*a})`; ox.beginPath(); ox.arc(trail[i][0],trail[i][1],2.0,0,TAU); ox.fill(); }
+  // moon body (elongated, oriented at θ)
+  const s=sampleAt(tt); const [mx,my]=moonScreen(s);
+  ox.save(); ox.translate(mx,my); ox.rotate(-th);
+  // body elongation reflects asphericity α (α=0 → round, larger α → more elongated; area kept ~constant)
+  const alph=Math.sqrt(alpha2), aspect=1+1.5*alph, R=11.5;
+  const La=R*Math.sqrt(aspect), Lb=R/Math.sqrt(aspect);
+  const mg=ox.createLinearGradient(-La,0,La,0); mg.addColorStop(0,'#9a8a6a'); mg.addColorStop(0.5,'#e9d5a6'); mg.addColorStop(1,'#9a8a6a');
+  ox.fillStyle=mg; ox.beginPath(); ox.ellipse(0,0,La,Lb,0,0,TAU); ox.fill();
+  ox.strokeStyle='rgba(60,45,20,0.6)'; ox.lineWidth=1; ox.stroke();
+  // long-axis marker
+  ox.strokeStyle='#3a2c12'; ox.lineWidth=1.5; ox.beginPath(); ox.moveTo(-La,0); ox.lineTo(La,0); ox.stroke();
+  ox.fillStyle='#2a1d04'; ox.beginPath(); ox.arc(La-3,0,2,0,TAU); ox.fill();
+  ox.restore();
+}
+
+function perihelionTick(){
+  orbits++;
+  // record live section point (white)
+  let twrap=((th%Math.PI)+Math.PI)%Math.PI;
+  liveSecPts.push([twrap,w]); if(liveSecPts.length>600) liveSecPts.shift();
+  plotPt(twrap,w,'rgba(255,255,255,0.92)',1.5);
+  perHist.push(w); if(perHist.length>6) perHist.shift();
+  // Lyapunov via shadow renormalisation
+  const dth=thS-th, dw=wS-w; const d=Math.hypot(dth,dw);
+  if(d>0 && orbits>1){ sepLamSum+=Math.log(d/D0); sepOrbits++;
+    const sc=D0/d; thS=th+dth*sc; wS=w+dw*sc;                 // renormalise
+    lamEst=sepLamSum/(sepOrbits*TAU); }
+  else { thS=th+D0; wS=w; }
+}
+
+function stepLive(){
+  const r=rk4(th,w,tt,LIVEDT); th=r[0]; w=r[1];
+  const rs=rk4(thS,wS,tt,LIVEDT); thS=rs[0]; wS=rs[1];
+  tt+=LIVEDT;
+  const ph=tt/TAU - Math.floor(tt/TAU);
+  if(ph<prevPh) perihelionTick();
+  prevPh=ph;
+}
+
+// ===================== verdict / stats =====================
+const sSpin=document.getElementById('sSpin'), sOrb=document.getElementById('sOrb'), sLam=document.getElementById('sLam');
+const vdot=document.getElementById('vdot'), vtext=document.getElementById('vtext');
+function updateStats(){
+  const spin = perHist.length? (perHist.reduce((a,b)=>a+b,0)/perHist.length) : w;
+  sSpin.textContent=spin.toFixed(2); sOrb.textContent=orbits;
+  sLam.textContent=isFinite(lamEst)?lamEst.toFixed(3):'…';
+  let col,msg;
+  if(!isFinite(lamEst)||sepOrbits<4){ col='#8a8a9c'; msg='Settling in — give it a few orbits to read the spin.'; }
+  else if(lamEst>0.02){ col='#ff6b8a'; msg='<b>Chaotic tumbling.</b> λ &gt; 0 — the orientation diverges; there is no repeating day.'; }
+  else { col='#9ae66e'; msg='<b>Regular spin.</b> λ ≈ 0 — the moon has locked into a steady rotation.'; }
+  vdot.style.background=col; vtext.innerHTML=msg;
+}
+
+// ===================== loop =====================
+let running=true;
+function frame(){
+  if(running){ for(let k=0;k<perFrame;k++) stepLive(); }
+  runJobs();
+  drawOrbitScene();
+  if(running && orbits%1===0) updateStats();
+  requestAnimationFrame(frame);
+}
+
+// ===================== controls =====================
+const eEl=document.getElementById('e'), eV=document.getElementById('eV');
+const aEl=document.getElementById('a'), aV=document.getElementById('aV');
+const spEl=document.getElementById('speed'), spV=document.getElementById('spV');
+function rebuild(keepSection){
+  buildTables(); setScale();
+  if(!keepSection){ drawSecAxes(); liveSecPts=[]; jobs=[]; replotLive(); }
+}
+eEl.oninput=()=>{ ecc=+eEl.value; eV.textContent='e = '+ecc.toFixed(3); rebuild(false); resetMoon(w); };
+aEl.oninput=()=>{ const al=+aEl.value; alpha2=al*al; aV.textContent='α = '+al.toFixed(2);
+  drawSecAxes(); liveSecPts=[]; jobs=[]; resetMoon(w); };
+spEl.oninput=()=>{ perFrame=+spEl.value; spV.textContent=perFrame+'×'; };
+document.getElementById('play').onclick=()=>{ running=!running;
+  document.getElementById('play').textContent=running?'Pause':'Play'; };
+document.getElementById('map').onclick=mapSection;
+document.getElementById('clearSec').onclick=()=>{ jobs=[]; liveSecPts=[]; drawSecAxes(); };
+document.getElementById('reseed').onclick=()=>resetMoon(1.5);
+document.getElementById('presets').onclick=e=>{ const b=e.target.closest('button'); if(!b)return;
+  ecc=+b.dataset.e; eEl.value=ecc; eV.textContent='e = '+ecc.toFixed(3);
+  const al=+b.dataset.a; alpha2=al*al; aEl.value=al; aV.textContent='α = '+al.toFixed(2);
+  rebuild(false); resetMoon(+b.dataset.w); running=true; document.getElementById('play').textContent='Pause'; };
+addEventListener('keydown',e=>{ if(e.code==='Space'){ e.preventDefault(); document.getElementById('play').click(); } });
+
+eV.textContent='e = '+ecc.toFixed(3); aV.textContent='α = 0.89'; spV.textContent=perFrame+'×';
+buildTables(); setScale(); drawSecAxes(); resetMoon(1.5);
+requestAnimationFrame(frame);
+
+// ===================== popovers =====================
+const POP={
+  chaos:{title:'Chaotic rotation',html:`
+    <p>Most moons keep one face to their planet — a fixed rotation locked to the orbit. Hyperion can't: its
+       lumpy shape and stretched orbit make that locked state <b>unstable</b>. Tiny differences in orientation
+       blow up, so the spin axis and rate wander unpredictably.</p>
+    <p class="muted">Deterministic equations, yet no long-term predictability — the hallmark of chaos.</p>`},
+  poincare:{title:'The Poincaré section',html:`
+    <p>Instead of watching the whole continuous motion, we take a snapshot once per orbit — at perihelion —
+       and plot the orientation <b>θ</b> against the spin rate <b>θ′</b> (in units of the orbital mean
+       motion n).</p>
+    <p>A trajectory that returns to the same neighbourhood traces a <b>closed loop</b> (regular). One that
+       scatters dots all over a region is <b>chaotic</b>.</p>
+    <p class="muted">It turns a tangled 3-D flow into a flat map you can actually read.</p>`},
+  aspher:{title:'Asphericity α',html:`
+    <p>How far from a sphere the moon is, through its principal moments of inertia A &lt; B &lt; C:</p>
+    <div class="eq">α² = 3 (B − A) ⁄ C</div>
+    <p>α = 0 is a perfect sphere — no gravitational torque, so it spins forever at constant rate. The larger
+       α, the harder gravity can grab the long axis. Hyperion is an extreme α ≈ 0.89.</p>`},
+  islands:{title:'Islands in a chaotic sea',html:`
+    <p>The mapped section splits into two worlds: <b>closed curves</b> — spin states locked into resonance
+       with the orbit (1:1, 3:2, 2:1…) — surrounded by a <b>grey haze</b> where a single trajectory fills a
+       whole region.</p>
+    <p class="muted">A moon caught in the haze tumbles chaotically; one trapped on a loop spins regularly.
+       Hyperion's synchronous island has dissolved, which is why it tumbles.</p>`},
+  tidal:{title:'Why most moons are calm',html:`
+    <p>Lower the eccentricity and the orbital forcing weakens; lower α and the torque weakens. Either way the
+       chaotic sea shrinks and the locked-rotation island grows until it fills the picture.</p>
+    <p class="muted">Our Moon, Io, Europa and most large satellites sit deep inside that island — round
+       enough and circular enough that they're tidally locked, showing one face for billions of years.</p>`},
+  real:{title:'The real Hyperion',html:`
+    <p>Hyperion is ~360 km across, one of the largest irregularly shaped bodies in the solar system — porous,
+       sponge-like, and decidedly not round. Its orbit (e ≈ 0.1) is nudged by a resonance with the big moon
+       Titan.</p>
+    <p class="muted">Wisdom, Peale &amp; Mignard predicted the chaotic tumbling in 1984; Voyager 2 (1981) and
+       Cassini images confirmed a rotation that never settles. This simulation uses their spin-orbit model.</p>`},
+};
+</script>
+
+<div id="pop" role="tooltip"></div>
+<script>
+(function(){
+  const pop=document.getElementById('pop'); let pinned=null;
+  function show(el){ const d=POP[el.dataset.pop]; if(!d)return;
+    pop.innerHTML='<h4>'+d.title+'</h4>'+d.html; pop.classList.add('show');
+    const r=el.getBoundingClientRect(), p=pop.getBoundingClientRect(), m=10;
+    let left=Math.max(m,Math.min(r.left+r.width/2-p.width/2,innerWidth-p.width-m));
+    let top=r.top-p.height-10; if(top<m) top=r.bottom+10;
+    pop.style.left=left+'px'; pop.style.top=top+'px'; }
+  function hide(){ pop.classList.remove('show'); }
+  document.querySelectorAll('.x').forEach(el=>{ el.tabIndex=0; el.setAttribute('role','button');
+    el.addEventListener('mouseenter',()=>{if(!pinned)show(el);});
+    el.addEventListener('mouseleave',()=>{if(!pinned)hide();});
+    el.addEventListener('focus',()=>{if(!pinned)show(el);});
+    el.addEventListener('blur',()=>{if(!pinned)hide();});
+    el.addEventListener('click',e=>{e.stopPropagation(); if(pinned===el){pinned=null;hide();}else{pinned=el;show(el);}});
+    el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el.click();}});
+  });
+  pop.addEventListener('click',e=>e.stopPropagation());
+  document.addEventListener('click',()=>{if(pinned){pinned=null;hide();}});
+  addEventListener('keydown',e=>{if(e.key==='Escape'&&pinned){pinned=null;hide();}});
+  addEventListener('scroll',()=>{if(pinned)show(pinned);},true);
+})();
+</script>
+</body>
+</html>

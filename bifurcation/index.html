@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bifurcation Diagram — The Road to Chaos</title>
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://mikebertin.github.io/eris/bifurcation/">
+<meta property="og:title" content="The Road to Chaos — Eris">
+<meta property="og:description" content="The period-doubling cascade of the map xₙ₊₁ = xₙ² − r. Zoom into the fractal tree and watch the Feigenbaum constant 4.669 emerge. From the Eris chaos playground.">
+<meta property="og:image" content="https://mikebertin.github.io/eris/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://mikebertin.github.io/eris/og.png">
+<style>
+  :root{
+    --bg:#0a0a0f; --panel:#13131c; --line:#23232f;
+    --ink:#e7e7ef; --muted:#8a8a9c; --accent:#b388ff; --accent2:#7cc4ff;
+    --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:radial-gradient(1200px 800px at 70% -10%,#16121f,#0a0a0f 60%);
+    color:var(--ink);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  .page{max-width:1080px;margin:0 auto;padding:30px 28px 44px}
+  .hero{margin-bottom:22px}
+  .back{display:inline-block;color:var(--muted);text-decoration:none;font-size:12.5px;margin-bottom:12px}
+  .back:hover{color:var(--accent)}
+  h1{font-size:25px;margin:0 0 7px;letter-spacing:-.2px}
+  .sub{color:var(--muted);font-size:13.5px;margin:0;line-height:1.55;max-width:820px}
+  .sub b{color:var(--accent);font-weight:600}
+
+  .cols{display:flex;gap:22px;align-items:flex-start}
+  @media (max-width:900px){.cols{flex-direction:column;align-items:center}}
+  .col-left{flex:0 0 auto;display:flex;flex-direction:column;gap:14px}
+  .col-right{flex:1 1 300px;min-width:290px;max-width:380px;display:flex;flex-direction:column;gap:14px}
+
+  .stage{position:relative}
+  canvas#c{
+    display:block;width:min(76vh,620px);height:min(50.7vh,413px);
+    background:#08080c;border:1px solid var(--line);border-radius:10px;
+    box-shadow:0 18px 60px -20px #000,0 0 0 1px #000 inset;cursor:crosshair;
+  }
+  .sel{position:absolute;border:1px solid var(--accent);background:rgba(179,136,255,.12);
+    pointer-events:none;display:none;border-radius:2px}
+  .axlab{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .axr{text-align:center;margin-top:4px}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .row{display:flex;gap:8px}
+  button{
+    flex:1;cursor:pointer;border:1px solid var(--line);background:#1c1c28;color:var(--ink);
+    font:inherit;font-size:13px;padding:9px 10px;border-radius:8px;transition:.12s;
+  }
+  button:hover{background:#262636;border-color:#34344a}
+  button.primary{background:var(--accent);color:#1a0d33;border-color:transparent;font-weight:600}
+  button.primary:hover{background:#c9aaff}
+
+  label{display:block;margin-top:14px;font-size:12px;color:var(--muted)}
+  label .val{float:right;color:var(--ink);font-family:var(--mono)}
+  input[type=range]{width:100%;margin-top:7px;accent-color:var(--accent)}
+
+  .ptitle{font-size:12px;color:var(--muted);margin:0 0 8px}
+  .ptitle b{color:var(--ink);font-weight:600}
+  .feig{font-family:var(--mono);font-size:12px;width:100%;border-collapse:collapse}
+  .feig th{color:var(--muted);font-weight:500;text-align:right;padding:3px 6px;font-size:11px}
+  .feig td{text-align:right;padding:3px 6px;border-top:1px solid var(--line)}
+  .feig td.d{color:var(--accent)}
+  .feig tr.lim td{color:var(--accent2)}
+  .hint{color:var(--muted);font-size:11.5px;margin-top:12px;line-height:1.5}
+  kbd{font-family:var(--mono);background:#1c1c28;border:1px solid var(--line);border-bottom-width:2px;
+    border-radius:5px;padding:1px 6px;font-size:11px;color:var(--ink)}
+
+  .crumbs{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+  .crumb{font-family:var(--mono);font-size:11px;color:var(--muted);background:#161620;border:1px solid var(--line);
+    border-radius:6px;padding:2px 7px;cursor:pointer}
+  .crumb:hover{color:var(--accent);border-color:#3a3450}
+
+  .notice{margin-top:28px;border-top:1px solid var(--line);padding-top:22px}
+  .notice-title{font-size:12px;text-transform:uppercase;letter-spacing:1.6px;color:var(--muted);margin:0 0 14px;font-weight:600}
+  .notice-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:760px){.notice-grid{grid-template-columns:1fr}}
+  .ncard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 16px}
+  .ncard h3{margin:0 0 7px;font-size:14px;font-weight:600}
+  .ncard p{margin:0 0 11px;color:var(--muted);font-size:12.5px;line-height:1.5}
+  .ncard .why{font-size:12.5px;font-weight:600}
+
+  .x{color:var(--accent);border-bottom:1px dotted currentColor;cursor:help;white-space:nowrap}
+  .x::after{content:'ⓘ';font-size:.7em;vertical-align:.35em;margin-left:1px;opacity:.7}
+  .x:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+  #pop{position:fixed;z-index:60;max-width:300px;background:#15151f;border:1px solid #2e2e3e;
+    border-radius:12px;padding:13px 15px;box-shadow:0 22px 55px -16px #000,0 0 0 1px #000;
+    font-size:13px;line-height:1.55;visibility:hidden;opacity:0;transform:translateY(4px);
+    pointer-events:none;transition:opacity .13s,transform .13s}
+  #pop.show{visibility:visible;opacity:1;transform:none;pointer-events:auto}
+  #pop h4{margin:0 0 7px;font-size:13.5px;color:var(--accent)}
+  #pop p{margin:0 0 8px}#pop p:last-child{margin:0}
+  #pop b{color:var(--ink);font-weight:600}
+  #pop .muted{color:var(--muted);font-size:12px}
+  #pop .eq{font-family:var(--mono);background:#0e0e16;border:1px solid var(--line);border-radius:7px;
+    padding:8px 10px;margin:9px 0;font-size:13px;text-align:center;color:#e6ebff}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="hero">
+    <a class="back" href="../">← Eris</a>
+    <h1>The Road to Chaos</h1>
+    <p class="sub">
+      Iterate one line of arithmetic — <b>x → x² − r</b> — and ask where it settles.
+      For small <b>r</b> it lands on a single value; raise r and that value splits in two, then four,
+      then eight, in a <span class="x" data-pop="pd">period-doubling cascade</span> that piles up into
+      <span class="x" data-pop="chaos">chaos</span>. <b>Drag a box to zoom</b> — the tree is a fractal, the same forks
+      all the way down. Ported from my undergrad computational-physics coursework.
+    </p>
+  </header>
+
+  <div class="cols">
+    <div class="col-left">
+      <div class="stage">
+        <canvas id="c"></canvas>
+        <div class="sel" id="sel"></div>
+      </div>
+      <div class="axr axlab" id="rlab">r</div>
+      <div class="crumbs" id="crumbs"></div>
+    </div>
+
+    <div class="col-right">
+      <div class="panel">
+        <div class="row">
+          <button id="reset" class="primary">Reset view</button>
+          <button id="zoomFeig">Zoom to cascade</button>
+        </div>
+        <label>Iterations plotted / column <span class="val" id="itV"></span></label>
+        <input type="range" id="iters" min="60" max="800" step="20" value="280">
+        <label>Transient discarded <span class="val" id="trV"></span></label>
+        <input type="range" id="trans" min="100" max="2000" step="50" value="600">
+        <div class="hint">
+          <b style="color:var(--ink)">Drag</b> a rectangle on the plot to zoom in · <kbd>R</kbd> reset ·
+          backspace or the trail above steps back out.
+        </div>
+      </div>
+
+      <div class="panel">
+        <p class="ptitle"><b class="x" data-pop="feig" style="font-weight:600">Feigenbaum's constant</b>
+          &nbsp;from the splitting points</p>
+        <table class="feig" id="feigTbl"></table>
+        <div class="hint">
+          Each fork happens δ ≈ 4.669 times sooner than the last. That ratio is
+          <b style="color:var(--ink)">universal</b> — the same number governs dripping taps and
+          population models. Computed live from this map's super-stable points.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="notice">
+    <h2 class="notice-title">Things to notice</h2>
+    <div class="notice-grid">
+      <div class="ncard">
+        <h3>It's a fractal</h3>
+        <p>Zoom into any fork and you find the whole tree again — branchings within branchings, self-similar without end.</p>
+        <span class="x why" data-pop="selfsim">Why it repeats</span>
+      </div>
+      <div class="ncard">
+        <h3>Windows of calm</h3>
+        <p>Deep in the chaotic smear, sharp white gaps open up — the system suddenly settles into a clean period-3 or -5 cycle, then shatters again.</p>
+        <span class="x why" data-pop="windows">The period-3 window</span>
+      </div>
+      <div class="ncard">
+        <h3>The forks speed up</h3>
+        <p>Each doubling is squeezed into a window ~4.7× narrower than the one before, so infinitely many forks fit before r ≈ 1.401.</p>
+        <span class="x why" data-pop="accum">The accumulation point</span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+const W = 760, H = 506;
+cv.width = W; cv.height = H;
+
+// view window in (r, x) space
+const FULL = {r0:-0.30, r1:2.00, x0:-2.05, x1:2.05};
+let view = {...FULL};
+let history = [];
+let plotIters = 280, transient = 600;
+
+const px2r = px => view.r0 + (px/W)*(view.r1-view.r0);
+const x2py = x => Math.round((view.x1 - x)/(view.x1-view.x0)*(H-1));
+
+function render(){
+  const counts = new Float32Array(W*H);
+  let maxC = 1;
+  for(let col=0; col<W; col++){
+    const r = px2r(col+0.5);
+    let x = 0.0;
+    // discard transient
+    for(let i=0;i<transient;i++){ x = x*x - r; if(x>1e6||x<-1e6){x=NaN;break;} }
+    if(!isFinite(x)) continue;
+    for(let i=0;i<plotIters;i++){
+      x = x*x - r;
+      if(!isFinite(x)||x>1e6||x<-1e6) break;
+      const row = x2py(x);
+      if(row>=0 && row<H){ const idx=row*W+col; const c=++counts[idx]; if(c>maxC)maxC=c; }
+    }
+  }
+  // map counts -> colour with log scaling
+  const img = ctx.createImageData(W,H);
+  const buf = new Uint32Array(img.data.buffer);
+  const bg = (255<<24)|(0x0c<<16)|(0x08<<8)|0x08;
+  const lm = 1/Math.log(maxC+1);
+  // accent #b388ff = (179,136,255)
+  for(let i=0;i<W*H;i++){
+    const c = counts[i];
+    if(c===0){ buf[i]=bg; continue; }
+    let t = Math.log(c+1)*lm;            // 0..1 density
+    t = Math.pow(t,0.55);
+    const r = Math.round(40 + t*(179-40)*1.0 + t*t*60);
+    const g = Math.round(20 + t*(136-20));
+    const b = Math.round(40 + t*(255-40));
+    buf[i] = (255<<24)|(Math.min(255,b)<<16)|(Math.min(255,g)<<8)|Math.min(255,r);
+  }
+  ctx.putImageData(img,0,0);
+  overlay();
+  updateLabels();
+}
+
+function overlay(){
+  // accumulation point r∞ ≈ 1.40115 for x²−r ; dashed marker if in view
+  const rInf = rAccum;
+  if(rInf>view.r0 && rInf<view.r1){
+    const xp = (rInf-view.r0)/(view.r1-view.r0)*W;
+    ctx.strokeStyle='rgba(124,196,255,0.6)'; ctx.setLineDash([4,4]); ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(xp,0); ctx.lineTo(xp,H); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='rgba(124,196,255,0.9)'; ctx.font='10px ui-monospace,monospace';
+    ctx.fillText('r∞', Math.min(W-22,xp+3), 12);
+  }
+}
+
+function updateLabels(){
+  document.getElementById('rlab').textContent =
+    `r :  ${view.r0.toFixed(4)}  →  ${view.r1.toFixed(4)}        x :  ${view.x0.toFixed(3)} … ${view.x1.toFixed(3)}`;
+  const cr = document.getElementById('crumbs'); cr.innerHTML='';
+  if(history.length){
+    history.forEach((v,i)=>{
+      const b=document.createElement('span'); b.className='crumb';
+      b.textContent = i===0 ? 'full' : `zoom ${i}`;
+      b.onclick=()=>{ view={...v}; history=history.slice(0,i); render(); };
+      cr.appendChild(b);
+    });
+    const here=document.createElement('span'); here.className='crumb'; here.style.color='var(--accent)';
+    here.style.borderColor='#3a3450'; here.textContent=`zoom ${history.length}`; cr.appendChild(here);
+  }
+}
+
+// ---------- box-zoom interaction ----------
+const sel = document.getElementById('sel');
+let dragging=false, sx=0, sy=0;
+function localXY(e){ const r=cv.getBoundingClientRect();
+  return [ (e.clientX-r.left)/r.width*W, (e.clientY-r.top)/r.height*H ]; }
+cv.addEventListener('mousedown',e=>{ dragging=true; [sx,sy]=localXY(e);
+  const r=cv.getBoundingClientRect(); sel.style.display='block';
+  sel.dataset.l=r.left; sel.dataset.t=r.top; sel.dataset.sw=r.width/W; sel.dataset.sh=r.height/H;
+});
+addEventListener('mousemove',e=>{ if(!dragging)return; const [cx,cy]=localXY(e);
+  const swf=+sel.dataset.sw, shf=+sel.dataset.sh, l=+sel.dataset.l, t=+sel.dataset.t;
+  const x0=Math.min(sx,cx),x1=Math.max(sx,cx),y0=Math.min(sy,cy),y1=Math.max(sy,cy);
+  sel.style.left=(scrollX+l+x0*swf)+'px'; sel.style.top=(scrollY+t+y0*shf)+'px';
+  sel.style.width=(x1-x0)*swf+'px'; sel.style.height=(y1-y0)*shf+'px';
+});
+addEventListener('mouseup',e=>{ if(!dragging)return; dragging=false; sel.style.display='none';
+  const [cx,cy]=localXY(e);
+  const x0=Math.min(sx,cx),x1=Math.max(sx,cx),y0=Math.min(sy,cy),y1=Math.max(sy,cy);
+  if(x1-x0<6||y1-y0<6) return;                         // ignore tiny drags / clicks
+  const nr0=px2r(x0), nr1=px2r(x1);
+  const nx1=view.x1-(y0/H)*(view.x1-view.x0), nx0=view.x1-(y1/H)*(view.x1-view.x0);
+  history.push({...view});
+  view={r0:nr0,r1:nr1,x0:nx0,x1:nx1}; render();
+});
+
+document.getElementById('reset').onclick=()=>{ view={...FULL}; history=[]; render(); };
+document.getElementById('zoomFeig').onclick=()=>{
+  history.push({...view});
+  view={r0:0.70, r1:1.42, x0:-1.55, x1:0.35}; render();
+};
+addEventListener('keydown',e=>{
+  if(e.key==='r'||e.key==='R'){ view={...FULL}; history=[]; render(); }
+  else if(e.key==='Backspace'){ e.preventDefault(); if(history.length){ view=history.pop(); render(); } }
+});
+
+const itEl=document.getElementById('iters'), itV=document.getElementById('itV');
+const trEl=document.getElementById('trans'), trV=document.getElementById('trV');
+let renderTimer=null;
+function schedule(){ clearTimeout(renderTimer); renderTimer=setTimeout(render,120); }
+itEl.oninput=()=>{ plotIters=+itEl.value; itV.textContent=plotIters; schedule(); };
+trEl.oninput=()=>{ transient=+trEl.value; trV.textContent=transient; schedule(); };
+itV.textContent=plotIters; trV.textContent=transient;
+
+// ---------- Feigenbaum from super-stable points ----------
+// R_n : parameter where the critical point x=0 lies on a period-2^n cycle, i.e. f_r^(2^n)(0)=0.
+function fIterAt0(r, p){ let x=0; for(let i=0;i<p;i++) x=x*x-r; return x; }
+function superstable(p, guess){
+  // Newton on g(r)=f_r^p(0); fall back gracefully
+  let r=guess;
+  for(let k=0;k<60;k++){
+    const g=fIterAt0(r,p);
+    const h=1e-7, gp=(fIterAt0(r+h,p)-fIterAt0(r-h,p))/(2*h);
+    if(!isFinite(g)||!isFinite(gp)||Math.abs(gp)<1e-14) break;
+    const step=g/gp; r-=step;
+    if(Math.abs(step)<1e-14) break;
+  }
+  return r;
+}
+let rAccum = 1.40115;
+function computeFeigenbaum(){
+  const R=[0, 1];                       // R0 (period1), R1 (period2)
+  let guess=1.31;                       // R2
+  for(let n=2;n<=8;n++){
+    const r=superstable(1<<n, guess);
+    R.push(r);
+    // extrapolate next guess using current ratio estimate (~4.5)
+    const prev=R[n], prev2=R[n-1];
+    guess = prev + (prev-prev2)/4.5;
+  }
+  // deltas
+  const rows=[];
+  for(let n=1;n<R.length-1;n++){
+    const d=(R[n]-R[n-1])/(R[n+1]-R[n]);
+    rows.push({n, R:R[n+1], d});
+  }
+  // accumulation estimate from last two ratios (geometric): r∞ ≈ Rk + (R_{k}-R_{k-1})/(δ-1)
+  const last=R.length-1;
+  rAccum = R[last] + (R[last]-R[last-1])/(4.669-1);
+
+  const tbl=document.getElementById('feigTbl');
+  let html='<tr><th>fork</th><th>r</th><th>δ = ratio</th></tr>';
+  rows.forEach(rw=>{
+    html+=`<tr><td>2<sup>${rw.n}</sup>→2<sup>${rw.n+1}</sup></td><td>${rw.R.toFixed(5)}</td>`
+        + `<td class="d">${isFinite(rw.d)?rw.d.toFixed(4):'—'}</td></tr>`;
+  });
+  html+=`<tr class="lim"><td colspan="2">limit δ →</td><td>4.6692</td></tr>`;
+  tbl.innerHTML=html;
+}
+
+// ---------- popovers ----------
+const POP={
+  pd:{title:'Period doubling',html:`
+    <p>Below a threshold the iteration settles to <b>one</b> value (a period-1 cycle). Cross it and
+       that value goes unstable, replaced by a <b>2-cycle</b> that alternates A,B,A,B… Push further and
+       each of those splits again: 4, 8, 16…</p>
+    <p class="muted">Each split is a <b>bifurcation</b>. The cascade of them is the generic route a smooth
+       system takes into chaos.</p>`},
+  chaos:{title:'Deterministic chaos',html:`
+    <p>Past the cascade the orbit never repeats — it wanders over a whole band of values, yet the rule is
+       completely deterministic. Two starts a hair apart diverge exponentially: <b>sensitive dependence on
+       initial conditions</b>.</p>
+    <div class="eq">x<sub>n+1</sub> = x<sub>n</sub>² − r</div>
+    <p class="muted">No randomness anywhere — the unpredictability is baked into the arithmetic.</p>`},
+  feig:{title:"Feigenbaum's δ",html:`
+    <p>Let r<sub>n</sub> be the r at which the period-2<sup>n</sup> cycle appears. The gaps between them
+       shrink geometrically, and the ratio of successive gaps tends to a constant:</p>
+    <div class="eq">δ = lim (r<sub>n</sub>−r<sub>n−1</sub>) ⁄ (r<sub>n+1</sub>−r<sub>n</sub>) = 4.6692…</div>
+    <p class="muted"><b>Universal:</b> Mitchell Feigenbaum found the same number for <i>every</i> map with a
+       smooth hump — it doesn't care about the specific formula. A genuine constant of nature.</p>`},
+  selfsim:{title:'Self-similarity',html:`
+    <p>The branch above each fork is a shrunken, distorted copy of the entire diagram. That's why zooming
+       keeps revealing the same forking tree — the structure is a <b>fractal</b>.</p>
+    <p class="muted">The horizontal shrink factor per level is δ ≈ 4.669; the vertical one is Feigenbaum's
+       second constant, α ≈ 2.503.</p>`},
+  windows:{title:'Periodic windows',html:`
+    <p>Inside the chaos sit narrow bands where order suddenly returns — most visibly a <b>period-3</b>
+       window. Zoom into one and it has its <i>own</i> doubling cascade back into chaos.</p>
+    <p class="muted">"Period three implies chaos" (Li &amp; Yorke, 1975): once a continuous map has a 3-cycle,
+       it must have cycles of every length, and chaos too.</p>`},
+  accum:{title:'The accumulation point',html:`
+    <p>Because each doubling window is ~4.669× narrower than the last, the whole infinite cascade fits into
+       a finite stretch of r and piles up at <b>r∞ ≈ 1.401</b> (marked in blue).</p>
+    <p class="muted">At exactly r∞ the orbit has period 2<sup>∞</sup> — it never repeats, but it isn't yet
+       fully chaotic. The onset of chaos lives precisely here.</p>`},
+};
+
+computeFeigenbaum();
+render();
+</script>
+
+<div id="pop" role="tooltip"></div>
+<script>
+(function(){
+  const pop=document.getElementById('pop'); let pinned=null;
+  function show(el){ const d=POP[el.dataset.pop]; if(!d)return;
+    pop.innerHTML='<h4>'+d.title+'</h4>'+d.html; pop.classList.add('show');
+    const r=el.getBoundingClientRect(), p=pop.getBoundingClientRect(), m=10;
+    let left=Math.max(m,Math.min(r.left+r.width/2-p.width/2,innerWidth-p.width-m));
+    let top=r.top-p.height-10; if(top<m) top=r.bottom+10;
+    pop.style.left=left+'px'; pop.style.top=top+'px'; }
+  function hide(){ pop.classList.remove('show'); }
+  document.querySelectorAll('.x').forEach(el=>{ el.tabIndex=0; el.setAttribute('role','button');
+    el.addEventListener('mouseenter',()=>{if(!pinned)show(el);});
+    el.addEventListener('mouseleave',()=>{if(!pinned)hide();});
+    el.addEventListener('focus',()=>{if(!pinned)show(el);});
+    el.addEventListener('blur',()=>{if(!pinned)hide();});
+    el.addEventListener('click',e=>{e.stopPropagation(); if(pinned===el){pinned=null;hide();}else{pinned=el;show(el);}});
+    el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el.click();}});
+  });
+  pop.addEventListener('click',e=>e.stopPropagation());
+  document.addEventListener('click',()=>{if(pinned){pinned=null;hide();}});
+  addEventListener('keydown',e=>{if(e.key==='Escape'&&pinned){pinned=null;hide();}});
+  addEventListener('scroll',()=>{if(pinned)show(pinned);},true);
+})();
+</script>
+</body>
+</html>

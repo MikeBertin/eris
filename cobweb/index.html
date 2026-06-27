@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cobweb & Lyapunov — Anatomy of an Orbit</title>
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://mikebertin.github.io/eris/cobweb/">
+<meta property="og:title" content="Anatomy of an Orbit — Eris">
+<meta property="og:description" content="Trace a single trajectory of xₙ₊₁ = xₙ² − r as a cobweb, and read off the Lyapunov exponent that tells order from chaos. From the Eris chaos playground.">
+<meta property="og:image" content="https://mikebertin.github.io/eris/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://mikebertin.github.io/eris/og.png">
+<style>
+  :root{
+    --bg:#0a0a0f; --panel:#13131c; --line:#23232f;
+    --ink:#e7e7ef; --muted:#8a8a9c; --accent:#9ae66e; --accent2:#ff6b8a; --accent3:#7cc4ff;
+    --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:radial-gradient(1200px 800px at 70% -10%,#101a12,#0a0a0f 60%);
+    color:var(--ink);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  .page{max-width:1080px;margin:0 auto;padding:30px 28px 44px}
+  .hero{margin-bottom:22px}
+  .back{display:inline-block;color:var(--muted);text-decoration:none;font-size:12.5px;margin-bottom:12px}
+  .back:hover{color:var(--accent)}
+  h1{font-size:25px;margin:0 0 7px;letter-spacing:-.2px}
+  .sub{color:var(--muted);font-size:13.5px;margin:0;line-height:1.55;max-width:820px}
+  .sub b{color:var(--accent);font-weight:600}
+
+  .cols{display:flex;gap:22px;align-items:flex-start}
+  @media (max-width:900px){.cols{flex-direction:column;align-items:center}}
+  .col-left{flex:0 0 auto;display:flex;flex-direction:column;gap:14px}
+  .col-right{flex:1 1 320px;min-width:300px;max-width:420px;display:flex;flex-direction:column;gap:14px}
+
+  .stage{position:relative}
+  canvas#c{
+    display:block;width:min(60vh,540px);height:min(60vh,540px);
+    background:#08080c;border:1px solid var(--line);border-radius:10px;
+    box-shadow:0 18px 60px -20px #000,0 0 0 1px #000 inset;
+  }
+  .verdict{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;
+    border:1px solid var(--line);background:var(--panel);font-size:13.5px}
+  .dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto;background:var(--muted)}
+  .verdict b{font-weight:600}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .row{display:flex;gap:8px}
+  button{
+    flex:1;cursor:pointer;border:1px solid var(--line);background:#1c1c28;color:var(--ink);
+    font:inherit;font-size:13px;padding:9px 10px;border-radius:8px;transition:.12s;
+  }
+  button:hover{background:#262636;border-color:#34344a}
+  button.primary{background:var(--accent);color:#0c2008;border-color:transparent;font-weight:600}
+  button.primary:hover{background:#b6f291}
+
+  label{display:block;margin-top:14px;font-size:12px;color:var(--muted)}
+  label .val{float:right;color:var(--ink);font-family:var(--mono)}
+  input[type=range]{width:100%;margin-top:7px;accent-color:var(--accent)}
+  .seg{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+  .seg button{padding:6px 8px;font-size:11.5px;flex:1 1 auto}
+
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 14px}
+  .stat .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+  .stat .v{font-family:var(--mono);font-size:19px;margin-top:2px}
+  .ptitle{font-size:12px;color:var(--muted);margin:0 0 8px}
+  .ptitle b{color:var(--ink);font-weight:600}
+  canvas#lyap{width:100%;height:auto;display:block;margin-top:4px;border-radius:8px;background:#0e0e16;border:1px solid var(--line);cursor:crosshair}
+  .hint{color:var(--muted);font-size:11.5px;margin-top:12px;line-height:1.5}
+  kbd{font-family:var(--mono);background:#1c1c28;border:1px solid var(--line);border-bottom-width:2px;
+    border-radius:5px;padding:1px 6px;font-size:11px;color:var(--ink)}
+
+  .notice{margin-top:28px;border-top:1px solid var(--line);padding-top:22px}
+  .notice-title{font-size:12px;text-transform:uppercase;letter-spacing:1.6px;color:var(--muted);margin:0 0 14px;font-weight:600}
+  .notice-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:760px){.notice-grid{grid-template-columns:1fr}}
+  .ncard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 16px}
+  .ncard h3{margin:0 0 7px;font-size:14px;font-weight:600}
+  .ncard p{margin:0 0 11px;color:var(--muted);font-size:12.5px;line-height:1.5}
+  .ncard .why{font-size:12.5px;font-weight:600}
+
+  .x{color:var(--accent);border-bottom:1px dotted currentColor;cursor:help;white-space:nowrap}
+  .x::after{content:'ⓘ';font-size:.7em;vertical-align:.35em;margin-left:1px;opacity:.7}
+  .x:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+  #pop{position:fixed;z-index:60;max-width:300px;background:#15151f;border:1px solid #2e2e3e;
+    border-radius:12px;padding:13px 15px;box-shadow:0 22px 55px -16px #000,0 0 0 1px #000;
+    font-size:13px;line-height:1.55;visibility:hidden;opacity:0;transform:translateY(4px);
+    pointer-events:none;transition:opacity .13s,transform .13s}
+  #pop.show{visibility:visible;opacity:1;transform:none;pointer-events:auto}
+  #pop h4{margin:0 0 7px;font-size:13.5px;color:var(--accent)}
+  #pop p{margin:0 0 8px}#pop p:last-child{margin:0}
+  #pop b{color:var(--ink);font-weight:600}
+  #pop .muted{color:var(--muted);font-size:12px}
+  #pop .eq{font-family:var(--mono);background:#0e0e16;border:1px solid var(--line);border-radius:7px;
+    padding:8px 10px;margin:9px 0;font-size:13px;text-align:center;color:#e6ebff}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="hero">
+    <a class="back" href="../">← Eris</a>
+    <h1>Anatomy of an Orbit</h1>
+    <p class="sub">
+      The <a class="x" data-pop="cobweb" style="text-decoration:none">cobweb</a> on the left is a single
+      trajectory of <b>x → x² − r</b>: bounce off the curve, across to the diagonal, repeat. Watch it spiral
+      into a fixed point, lock onto a cycle, or fill the whole interval. The
+      <span class="x" data-pop="lyap">Lyapunov exponent</span> on the right turns that into one number:
+      <b>negative = order, positive = chaos</b>. Click the curve to jump to any r.
+    </p>
+  </header>
+
+  <div class="cols">
+    <div class="col-left">
+      <div class="stage"><canvas id="c"></canvas></div>
+      <div class="verdict"><span class="dot" id="vdot"></span><span id="vtext">—</span></div>
+    </div>
+
+    <div class="col-right">
+      <div class="panel">
+        <div class="row">
+          <button id="play" class="primary">Pause</button>
+          <button id="restart">New start</button>
+        </div>
+        <label>Parameter r <span class="val" id="rV"></span></label>
+        <input type="range" id="r" min="-0.25" max="2" step="0.001" value="1.62">
+        <label>Start x₀ <span class="val" id="x0V"></span></label>
+        <input type="range" id="x0" min="-1.8" max="1.8" step="0.01" value="0.1">
+        <label>Speed <span class="val" id="spV"></span></label>
+        <input type="range" id="speed" min="1" max="30" value="6">
+        <label>Jump to a regime</label>
+        <div class="seg" id="presets">
+          <button data-r="0.50">fixed point</button>
+          <button data-r="0.90">2-cycle</button>
+          <button data-r="1.30">4-cycle</button>
+          <button data-r="1.62">chaos</button>
+          <button data-r="1.77">3-cycle window</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="stats">
+          <div class="stat"><div class="k">Detected</div><div class="v" id="sPer">—</div></div>
+          <div class="stat"><div class="k">λ at this r</div><div class="v" id="sLam">—</div></div>
+          <div class="stat"><div class="k">Step</div><div class="v" id="sN">0</div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <p class="ptitle"><b class="x" data-pop="lyapcurve" style="font-weight:600">Lyapunov spectrum</b>
+          &nbsp;λ(r) across the whole map</p>
+        <canvas id="lyap" width="360" height="200"></canvas>
+        <div class="hint">
+          Where λ dips below 0 (green) the orbit is periodic; where it pokes above 0 (red) it's chaotic.
+          The downward spikes inside the red are <b style="color:var(--ink)">periodic windows</b> — islands of
+          order. <kbd>Space</kbd> play/pause · click the curve to set r.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="notice">
+    <h2 class="notice-title">Things to notice</h2>
+    <div class="notice-grid">
+      <div class="ncard">
+        <h3>Same r, same picture</h3>
+        <p>In the ordered regime, change x₀ to anything and the cobweb still ends on the same cycle — the start is forgotten.</p>
+        <span class="x why" data-pop="attractor">The attractor</span>
+      </div>
+      <div class="ncard">
+        <h3>λ = 0 at every fork</h3>
+        <p>The Lyapunov curve just kisses zero at each period-doubling, then dives back down — order lost and regained.</p>
+        <span class="x why" data-pop="tangent">Why it touches zero</span>
+      </div>
+      <div class="ncard">
+        <h3>Chaos butts up to calm</h3>
+        <p>Nudge r by 0.001 at the edge of a window and a clean 3-cycle dissolves into a full chaotic smear.</p>
+        <span class="x why" data-pop="edge">Sensitive in r too</span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+// ---------------- cobweb plot ----------------
+const cv=document.getElementById('c'), ctx=cv.getContext('2d');
+const S=540; cv.width=cv.height=S;
+const PAD=42;
+// plot window in maths coords
+let lo=-2.1, hi=2.1;
+const mapX=v=>PAD+(v-lo)/(hi-lo)*(S-2*PAD);
+const mapY=v=>S-PAD-(v-lo)/(hi-lo)*(S-2*PAD);
+
+let r=1.62, x0=0.1, x=x0, n=0, running=true, perFrame=6;
+let orbit=[];                       // recent (x) values for period detection
+const f=v=>v*v-r;
+
+function drawAxes(){
+  ctx.clearRect(0,0,S,S);
+  ctx.fillStyle='#08080c'; ctx.fillRect(0,0,S,S);
+  // grid + frame
+  ctx.strokeStyle='#1b1b26'; ctx.lineWidth=1;
+  ctx.strokeRect(mapX(lo),mapY(hi),mapX(hi)-mapX(lo),mapY(lo)-mapY(hi));
+  ctx.fillStyle='#5a5a6e'; ctx.font='11px ui-monospace,monospace';
+  for(let v=-2;v<=2;v++){ const X=mapX(v),Y=mapY(v);
+    ctx.strokeStyle='#14141d'; ctx.beginPath(); ctx.moveTo(X,mapY(hi)); ctx.lineTo(X,mapY(lo)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(mapX(lo),Y); ctx.lineTo(mapX(hi),Y); ctx.stroke();
+    ctx.fillText(v, X-3, mapY(lo)+15); ctx.fillText(v, mapX(lo)-22, Y+4);
+  }
+  ctx.fillStyle='#7a7a90'; ctx.fillText('xₙ', S-PAD+4, mapY(lo)+15); ctx.fillText('xₙ₊₁', mapX(lo)-30, mapY(hi)-6);
+  // diagonal y=x
+  ctx.strokeStyle='#3a4a5a'; ctx.lineWidth=1.5; ctx.beginPath();
+  ctx.moveTo(mapX(lo),mapY(lo)); ctx.lineTo(mapX(hi),mapY(hi)); ctx.stroke();
+  // parabola y=x²-r
+  ctx.strokeStyle='#ff6b8a'; ctx.lineWidth=2; ctx.beginPath();
+  let first=true;
+  for(let px=0;px<=S;px+=1){ const xv=lo+(px/S)*(hi-lo); const yv=f(xv);
+    if(yv<lo-1||yv>hi+1){ first=true; continue; }
+    const X=mapX(xv),Y=mapY(yv); if(first){ctx.moveTo(X,Y);first=false;} else ctx.lineTo(X,Y); }
+  ctx.stroke();
+}
+
+let cobX=x0;        // current x for cobweb animation
+const KEEP=150;     // how many recent transitions to keep on screen
+let seq=[];         // trajectory values (drawn as a trailing window)
+function resetOrbit(){ x=x0; cobX=x0; n=0; orbit=[]; seq=[x0]; redraw(); }
+
+function advance(){
+  const xn1=f(cobX);
+  cobX=xn1; n++;
+  seq.push(xn1); if(seq.length>KEEP+2) seq.shift();
+  orbit.push(xn1); if(orbit.length>220) orbit.shift();
+  if(cobX>hi+2||cobX<lo-2){ cobX=(Math.random()-0.5)*0.2; seq=[cobX]; } // escaped -> respawn
+}
+
+function redraw(){
+  drawAxes();
+  // draw the trailing window of cobweb segments, older = fainter
+  const m=seq.length;
+  for(let i=0;i<m-1;i++){
+    const xn=seq[i], xn1=seq[i+1];
+    const a=0.18+0.72*(i/(m-1||1));               // fade in toward the present
+    ctx.strokeStyle=`rgba(154,230,110,${a})`; ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.moveTo(mapX(xn),mapY(xn)); ctx.lineTo(mapX(xn),mapY(xn1));   // vertical
+    ctx.lineTo(mapX(xn1),mapY(xn1)); ctx.stroke();                                     // horizontal
+  }
+  // current point on the diagonal
+  ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(mapX(cobX),mapY(cobX),3.2,0,7); ctx.fill();
+}
+
+// period detection from tail of orbit
+function detectPeriod(){
+  if(orbit.length<80) return 0;
+  const tail=orbit.slice(-64); const last=tail[tail.length-1];
+  for(let p=1;p<=8;p++){
+    let ok=true;
+    for(let k=1;k<=3;k++){ const a=tail[tail.length-1-k*p];
+      if(a===undefined||Math.abs(a-tail[tail.length-1-(k-1)*p- (k>1?0:0)])>1e-4){ /*compare same phase*/ }
+    }
+    // compare value p steps apart, several times
+    let good=true;
+    for(let k=1;k<=4;k++){ const a=tail[tail.length-1-(k*p)], b=tail[tail.length-1-((k-1)*p)];
+      if(a===undefined||b===undefined||Math.abs(a-b)>2e-4){ good=false; break; } }
+    if(good) return p;
+  }
+  return -1; // chaotic / aperiodic
+}
+
+// ---------------- Lyapunov exponent ----------------
+function lyapunovAt(rr){
+  let xx=0.0, sum=0, cnt=0;
+  for(let i=0;i<300;i++){ xx=xx*xx-rr; if(!isFinite(xx)) return NaN; }   // transient
+  for(let i=0;i<1200;i++){ xx=xx*xx-rr; if(!isFinite(xx)) return NaN;
+    const d=Math.abs(2*xx); if(d>0){ sum+=Math.log(d); cnt++; } }
+  return cnt? sum/cnt : NaN;
+}
+
+// ---------------- Lyapunov spectrum plot ----------------
+const lp=document.getElementById('lyap'), lx=lp.getContext('2d');
+const LW=360, LH=200, lml=30, lmr=8, lmt=10, lmb=20;
+const LR0=-0.25, LR1=2.0;
+let lamData=[];                       // {r, lam}
+const LX=rr=> lml+(rr-LR0)/(LR1-LR0)*(LW-lml-lmr);
+const lamMin=-2.2, lamMax=0.8;
+const LY=l=> lmt+(lamMax-Math.max(lamMin,Math.min(lamMax,l)))/(lamMax-lamMin)*(LH-lmt-lmb);
+function buildLyap(){
+  lamData=[];
+  const COLS=LW-lml-lmr;
+  for(let i=0;i<=COLS;i++){ const rr=LR0+(i/COLS)*(LR1-LR0); lamData.push({r:rr,lam:lyapunovAt(rr)}); }
+}
+function drawLyap(){
+  lx.clearRect(0,0,LW,LH);
+  // zero axis
+  const y0=LY(0);
+  lx.fillStyle='#10160f'; lx.fillRect(lml,lmt,LW-lml-lmr,y0-lmt);          // (unused tint top)
+  // background bands: above zero faint red, below faint green
+  lx.fillStyle='rgba(255,107,138,0.06)'; lx.fillRect(lml,lmt,LW-lml-lmr,y0-lmt);
+  lx.fillStyle='rgba(154,230,110,0.05)'; lx.fillRect(lml,y0,LW-lml-lmr,LH-lmb-y0);
+  // axes
+  lx.strokeStyle='#2a2a38'; lx.lineWidth=1;
+  lx.beginPath(); lx.moveTo(lml,lmt); lx.lineTo(lml,LH-lmb); lx.lineTo(LW-lmr,LH-lmb); lx.stroke();
+  lx.strokeStyle='#3a3a4a'; lx.setLineDash([3,3]); lx.beginPath();
+  lx.moveTo(lml,y0); lx.lineTo(LW-lmr,y0); lx.stroke(); lx.setLineDash([]);
+  lx.fillStyle='#6b6b80'; lx.font='10px ui-monospace,monospace';
+  lx.fillText('0', 14, y0+3); lx.fillText('λ', 12, lmt+2);
+  for(let t=0;t<=2;t++){ const X=LX(t); lx.fillText(t, X-3, LH-lmb+12); }
+  lx.fillText('r', LW-lmr-4, LH-2);
+  // the curve, coloured by sign, clipped
+  for(let i=1;i<lamData.length;i++){
+    const a=lamData[i-1], b=lamData[i];
+    if(!isFinite(a.lam)||!isFinite(b.lam)) continue;
+    lx.strokeStyle = (b.lam>0)?'#ff6b8a':'#9ae66e'; lx.lineWidth=1.4;
+    lx.beginPath(); lx.moveTo(LX(a.r),LY(a.lam)); lx.lineTo(LX(b.r),LY(b.lam)); lx.stroke();
+  }
+  // current-r marker
+  const X=LX(r); lx.strokeStyle='#7cc4ff'; lx.lineWidth=1; lx.setLineDash([2,3]);
+  lx.beginPath(); lx.moveTo(X,lmt); lx.lineTo(X,LH-lmb); lx.stroke(); lx.setLineDash([]);
+  const lam=lyapunovAt(r);
+  if(isFinite(lam)){ lx.fillStyle='#fff'; lx.beginPath(); lx.arc(X,LY(lam),3,0,7); lx.fill(); }
+}
+lp.addEventListener('click',e=>{
+  const rect=lp.getBoundingClientRect(); const cx=(e.clientX-rect.left)/rect.width*LW;
+  const rr=LR0+(cx-lml)/(LW-lml-lmr)*(LR1-LR0);
+  setR(Math.max(-0.25,Math.min(2,rr)));
+});
+
+// ---------------- stats / verdict ----------------
+const sPer=document.getElementById('sPer'), sLam=document.getElementById('sLam'), sN=document.getElementById('sN');
+const vdot=document.getElementById('vdot'), vtext=document.getElementById('vtext');
+function updateVerdict(){
+  const lam=lyapunovAt(r);
+  sLam.textContent=isFinite(lam)?lam.toFixed(3):'∞';
+  sN.textContent=n;
+  const p=detectPeriod();
+  let label, col, msg;
+  if(!isFinite(lam)){ label='escapes'; col='#8a8a9c'; msg='Orbit runs off to infinity (r past 2).'; }
+  else if(lam>0.005){ label='chaotic'; col='#ff6b8a'; msg='<b>Chaos.</b> λ > 0 — nearby orbits diverge; the cobweb never repeats.'; }
+  else if(p>0){ label=p===1?'fixed point':`period-${p}`; col='#9ae66e';
+    msg=`<b>Order.</b> λ < 0 — the orbit has settled onto a ${p===1?'single fixed point':p+'-cycle'}.`; }
+  else { label='settling'; col='#ffd479'; msg='Transient — converging onto a cycle (λ < 0).'; }
+  sPer.textContent=label;
+  vdot.style.background=col;
+  vtext.innerHTML=msg;
+}
+
+// ---------------- loop ----------------
+function frame(){
+  if(running){ for(let k=0;k<perFrame;k++) advance(); redraw(); sN.textContent=n;
+    if(n%6===0) updateVerdict(); }
+  requestAnimationFrame(frame);
+}
+
+// ---------------- controls ----------------
+const rEl=document.getElementById('r'), rV=document.getElementById('rV');
+const x0El=document.getElementById('x0'), x0V=document.getElementById('x0V');
+const spEl=document.getElementById('speed'), spV=document.getElementById('spV');
+function setR(nr){ r=Math.round(nr*1000)/1000; rEl.value=r; rV.textContent='r = '+r.toFixed(3);
+  resetOrbit(); drawLyap(); updateVerdict(); }
+rEl.oninput=()=>setR(+rEl.value);
+x0El.oninput=()=>{ x0=+x0El.value; x0V.textContent='x₀ = '+x0.toFixed(2); resetOrbit(); updateVerdict(); };
+spEl.oninput=()=>{ perFrame=+spEl.value; spV.textContent=perFrame+' / frame'; };
+document.getElementById('play').onclick=()=>{ running=!running;
+  document.getElementById('play').textContent=running?'Pause':'Play'; };
+document.getElementById('restart').onclick=()=>{ x0=(Math.random()-0.5)*1.2; x0El.value=x0;
+  x0V.textContent='x₀ = '+x0.toFixed(2); resetOrbit(); running=true;
+  document.getElementById('play').textContent='Pause'; };
+document.getElementById('presets').onclick=e=>{ const b=e.target.closest('button'); if(!b)return;
+  setR(+b.dataset.r); running=true; document.getElementById('play').textContent='Pause'; };
+addEventListener('keydown',e=>{ if(e.code==='Space'){ e.preventDefault(); document.getElementById('play').click(); } });
+
+rV.textContent='r = '+r.toFixed(3); x0V.textContent='x₀ = '+x0.toFixed(2); spV.textContent=perFrame+' / frame';
+buildLyap();
+resetOrbit(); drawLyap(); updateVerdict();
+requestAnimationFrame(frame);
+
+// ---------------- popovers ----------------
+const POP={
+  cobweb:{title:'Reading a cobweb',html:`
+    <p>Start at x₀ on the diagonal. Go <b>vertically</b> to the red curve — that height is the next value x₁.
+       Go <b>horizontally</b> to the diagonal to copy x₁ onto the x-axis. Repeat. The staircase or spiral you
+       trace <i>is</i> the orbit.</p>
+    <p class="muted">Spiralling inward → a stable point. A closed box → a cycle. Filling the square → chaos.</p>`},
+  lyap:{title:'The Lyapunov exponent λ',html:`
+    <p>It measures how fast two infinitesimally close orbits pull apart, averaged along the trajectory:</p>
+    <div class="eq">λ = ⟨ ln |f′(x)| ⟩ = ⟨ ln |2x| ⟩</div>
+    <p><b>λ &lt; 0</b>: errors shrink → stable, periodic. <b>λ &gt; 0</b>: errors grow exponentially →
+       chaos. <b>λ = 0</b>: the knife-edge at each bifurcation.</p>`},
+  lyapcurve:{title:'The λ(r) spectrum',html:`
+    <p>λ computed for every r. It stays negative through the periodic regime, touching 0 at each fork, then
+       climbs above 0 once chaos sets in around r ≈ 1.4.</p>
+    <p class="muted">The sharp <b>downward spikes</b> in the chaotic region are periodic windows — λ plunges
+       negative because order briefly returns. The period-3 window near r ≈ 1.75 is the widest.</p>`},
+  attractor:{title:'Forgetting the start',html:`
+    <p>When λ &lt; 0 the map has an <b>attractor</b> — a fixed point or cycle that pulls in every nearby start.
+       Change x₀ and the transient looks different, but the destination is identical.</p>
+    <p class="muted">Chaos kills this: with λ &gt; 0 the tiniest change in x₀ leads somewhere completely different.</p>`},
+  tangent:{title:'λ = 0 at a bifurcation',html:`
+    <p>A cycle is stable while |f′| &lt; 1 along it (λ &lt; 0) and loses stability exactly when |f′| = 1,
+       i.e. λ = 0. That's the moment it splits in two.</p>
+    <p class="muted">So every tooth where the green curve touches the zero line is a period-doubling — the same
+       forks you see in the bifurcation diagram.</p>`},
+  edge:{title:'Sensitivity in the parameter',html:`
+    <p>Chaos means sensitive dependence on the <i>starting value</i> — but the map is also exquisitely
+       sensitive to <b>r</b>. The boundary of a periodic window is razor-thin.</p>
+    <p class="muted">This is why long-range weather or population forecasts are hard: you must know both the
+       state <i>and</i> the parameters with impossible precision.</p>`},
+};
+</script>
+
+<div id="pop" role="tooltip"></div>
+<script>
+(function(){
+  const pop=document.getElementById('pop'); let pinned=null;
+  function show(el){ const d=POP[el.dataset.pop]; if(!d)return;
+    pop.innerHTML='<h4>'+d.title+'</h4>'+d.html; pop.classList.add('show');
+    const r=el.getBoundingClientRect(), p=pop.getBoundingClientRect(), m=10;
+    let left=Math.max(m,Math.min(r.left+r.width/2-p.width/2,innerWidth-p.width-m));
+    let top=r.top-p.height-10; if(top<m) top=r.bottom+10;
+    pop.style.left=left+'px'; pop.style.top=top+'px'; }
+  function hide(){ pop.classList.remove('show'); }
+  document.querySelectorAll('.x').forEach(el=>{ el.tabIndex=0; el.setAttribute('role','button');
+    el.addEventListener('mouseenter',()=>{if(!pinned)show(el);});
+    el.addEventListener('mouseleave',()=>{if(!pinned)hide();});
+    el.addEventListener('focus',()=>{if(!pinned)show(el);});
+    el.addEventListener('blur',()=>{if(!pinned)hide();});
+    el.addEventListener('click',e=>{e.stopPropagation(); if(pinned===el){pinned=null;hide();}else{pinned=el;show(el);}});
+    el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el.click();}});
+  });
+  pop.addEventListener('click',e=>e.stopPropagation());
+  document.addEventListener('click',()=>{if(pinned){pinned=null;hide();}});
+  addEventListener('keydown',e=>{if(e.key==='Escape'&&pinned){pinned=null;hide();}});
+  addEventListener('scroll',()=>{if(pinned)show(pinned);},true);
+})();
+</script>
+</body>
+</html>

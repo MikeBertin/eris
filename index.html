@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eris — A Chaos Playground</title>
+<meta name="description" content="Three interactive demos of deterministic chaos — the period-doubling road to chaos, the Lyapunov exponent, and the chaotic tumbling of Saturn's moon Hyperion — rebuilt from my undergrad computational-physics coursework.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://mikebertin.github.io/eris/">
+<meta property="og:title" content="Eris — Chaos & Nonlinear Dynamics in the Browser">
+<meta property="og:description" content="The road to chaos, the Lyapunov exponent, and the chaotic tumbling of Hyperion — three interactive demos rebuilt from my undergrad computational-physics coursework.">
+<meta property="og:image" content="https://mikebertin.github.io/eris/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Eris — Chaos in the Browser">
+<meta name="twitter:description" content="Period-doubling, the Lyapunov exponent & Hyperion's chaotic tumble — interactive chaos demos from my undergrad coursework.">
+<meta name="twitter:image" content="https://mikebertin.github.io/eris/og.png">
+<style>
+  :root{
+    --bg:#0a0a0f; --panel:#13131c; --line:#23232f;
+    --ink:#e7e7ef; --muted:#8a8a9c;
+    --bif:#b388ff; --cob:#9ae66e; --hyp:#ffd479;
+    --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1100px 700px at 50% -10%,#16121f,#0a0a0f 60%);
+    color:var(--ink);min-height:100vh;
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  .wrap{max-width:1040px;margin:0 auto;padding:64px 28px 48px}
+  header{margin-bottom:44px}
+  .badge{font-family:var(--mono);font-size:12px;letter-spacing:3px;color:var(--muted);text-transform:uppercase}
+  h1{font-size:46px;margin:8px 0 10px;letter-spacing:-.5px;
+     background:linear-gradient(90deg,var(--bif),var(--cob) 52%,var(--hyp));
+     -webkit-background-clip:text;background-clip:text;color:transparent}
+  .lede{color:var(--muted);font-size:15.5px;line-height:1.6;max-width:680px;margin:0}
+  .lede b{color:var(--ink);font-weight:600}
+
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:40px}
+  @media (max-width:820px){.grid{grid-template-columns:1fr;max-width:420px;margin-inline:auto}}
+
+  a.card{
+    text-decoration:none;color:inherit;background:var(--panel);border:1px solid var(--line);
+    border-radius:14px;overflow:hidden;display:flex;flex-direction:column;
+    transition:transform .15s, border-color .15s, box-shadow .15s;
+  }
+  a.card:hover{transform:translateY(-4px);box-shadow:0 24px 50px -24px #000}
+  a.card.bif:hover{border-color:var(--bif)}
+  a.card.cob:hover{border-color:var(--cob)}
+  a.card.hyp:hover{border-color:var(--hyp)}
+  .thumb{height:158px;background:#06070b;position:relative;border-bottom:1px solid var(--line)}
+  .thumb canvas{width:100%;height:100%;display:block}
+  .body{padding:16px 16px 18px}
+  .tag{font-family:var(--mono);font-size:11px;letter-spacing:1.5px;text-transform:uppercase}
+  .bif .tag{color:var(--bif)} .cob .tag{color:var(--cob)} .hyp .tag{color:var(--hyp)}
+  .body h2{font-size:18px;margin:6px 0 6px}
+  .body p{color:var(--muted);font-size:13px;line-height:1.5;margin:0 0 12px}
+  .open{font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px}
+  .bif .open{color:var(--bif)} .cob .open{color:var(--cob)} .hyp .open{color:var(--hyp)}
+  .open .arrow{transition:transform .15s}
+  a.card:hover .open .arrow{transform:translateX(4px)}
+
+  footer{margin-top:48px;padding-top:22px;border-top:1px solid var(--line);
+    color:var(--muted);font-size:12.5px;line-height:1.7}
+  footer b{color:var(--ink);font-weight:600}
+  footer a{color:var(--bif);text-decoration:none}
+  footer a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="badge">Eris</div>
+    <h1>Chaos, in the Browser</h1>
+    <p class="lede">
+      Three interactive demos of <b>deterministic chaos</b> — systems with no randomness at all that are
+      nonetheless impossible to predict. From the <b>period-doubling</b> route into chaos and the
+      <b>Lyapunov exponent</b> that measures it, to the real chaotic tumbling of Saturn's moon
+      <b>Hyperion</b>. Rebuilt from my undergraduate computational-physics coursework.
+    </p>
+  </header>
+
+  <div class="grid">
+    <a class="card bif" href="bifurcation/">
+      <div class="thumb"><canvas id="t-bif"></canvas></div>
+      <div class="body">
+        <div class="tag">Period doubling</div>
+        <h2>The Road to Chaos</h2>
+        <p>One value splits into two, four, eight… Zoom the fractal tree and watch Feigenbaum's 4.669 emerge.</p>
+        <span class="open">Open demo <span class="arrow">→</span></span>
+      </div>
+    </a>
+
+    <a class="card cob" href="cobweb/">
+      <div class="thumb"><canvas id="t-cob"></canvas></div>
+      <div class="body">
+        <div class="tag">Order vs chaos</div>
+        <h2>Anatomy of an Orbit</h2>
+        <p>Trace a single trajectory as a cobweb, and read the Lyapunov exponent that tells stability from chaos.</p>
+        <span class="open">Open demo <span class="arrow">→</span></span>
+      </div>
+    </a>
+
+    <a class="card hyp" href="hyperion/">
+      <div class="thumb"><canvas id="t-hyp"></canvas></div>
+      <div class="body">
+        <div class="tag">Celestial chaos</div>
+        <h2>The Tumbling Moon</h2>
+        <p>Saturn's moon Hyperion has no fixed day. Map the Poincaré section of its chaotic spin.</p>
+        <span class="open">Open demo <span class="arrow">→</span></span>
+      </div>
+    </a>
+  </div>
+
+  <footer>
+    <b>Eris</b> — named for the Greek goddess of strife and discord (and a dwarf planet besides).
+    Built by Mike Bertin. Everything runs entirely in your browser; nothing is sent anywhere.
+    <br>From PH30055 computational-physics coursework, ~2011 · rebuilt 2026.
+  </footer>
+</div>
+
+<script>
+const TAU=Math.PI*2;
+
+// ---- mini bifurcation (rendered once) ----
+function miniBif(cv){
+  const ctx=cv.getContext('2d'); const W=cv.width=320, H=cv.height=158;
+  const r0=0.2,r1=2.0,x0=-2.05,x1=2.05;
+  const counts=new Float32Array(W*H); let mx=1;
+  for(let c=0;c<W;c++){ const r=r0+(c/W)*(r1-r0); let x=0;
+    for(let i=0;i<150;i++){ x=x*x-r; if(x>1e6){x=NaN;break;} }
+    if(!isFinite(x))continue;
+    for(let i=0;i<160;i++){ x=x*x-r; if(!isFinite(x))break;
+      const row=Math.round((x1-x)/(x1-x0)*(H-1)); if(row>=0&&row<H){const k=row*W+c;const v=++counts[k];if(v>mx)mx=v;} } }
+  const img=ctx.createImageData(W,H), buf=new Uint32Array(img.data.buffer);
+  const bg=(255<<24)|(0x0b<<16)|(0x07<<8)|0x06, lm=1/Math.log(mx+1);
+  for(let i=0;i<W*H;i++){ const v=counts[i]; if(!v){buf[i]=bg;continue;}
+    let t=Math.pow(Math.log(v+1)*lm,0.55);
+    const R=Math.min(255,40+t*139+t*t*60), G=Math.min(255,20+t*116), B=Math.min(255,40+t*215);
+    buf[i]=(255<<24)|(B<<16)|(G<<8)|R; }
+  ctx.putImageData(img,0,0);
+  return ()=>{};   // static
+}
+
+// ---- mini cobweb (animated, chaotic r) ----
+function miniCob(cv){
+  const ctx=cv.getContext('2d'); const W=cv.width=320,H=cv.height=158;
+  const r=1.64, lo=-2.05,hi=2.05, pad=10;
+  const mX=v=>pad+(v-lo)/(hi-lo)*(W-2*pad), mY=v=>H-pad-(v-lo)/(hi-lo)*(H-2*pad);
+  const f=v=>v*v-r; let seq=[0.1], cob=0.1; const KEEP=70;
+  function axes(){ ctx.fillStyle='#0b0706'; ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle='#34405a'; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(mX(lo),mY(lo)); ctx.lineTo(mX(hi),mY(hi)); ctx.stroke();
+    ctx.strokeStyle='#ff6b8a'; ctx.lineWidth=1.6; ctx.beginPath(); let fst=true;
+    for(let p=0;p<=W;p++){ const xv=lo+p/W*(hi-lo), yv=f(xv); if(yv<lo||yv>hi){fst=true;continue;}
+      const X=mX(xv),Y=mY(yv); if(fst){ctx.moveTo(X,Y);fst=false;}else ctx.lineTo(X,Y);} ctx.stroke(); }
+  return ()=>{ for(let s=0;s<2;s++){ const n=f(cob); cob=n; seq.push(n); if(seq.length>KEEP+2)seq.shift();
+      if(cob>hi+2||cob<lo-2){cob=(Math.random()-.5)*.2;seq=[cob];} }
+    axes(); const m=seq.length;
+    for(let i=0;i<m-1;i++){ const a=0.15+0.7*(i/(m-1||1)); ctx.strokeStyle=`rgba(154,230,110,${a})`; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(mX(seq[i]),mY(seq[i])); ctx.lineTo(mX(seq[i]),mY(seq[i+1])); ctx.lineTo(mX(seq[i+1]),mY(seq[i+1])); ctx.stroke(); }
+    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(mX(cob),mY(cob),2.5,0,TAU); ctx.fill(); };
+}
+
+// ---- mini Hyperion (orbit + tumbling moon) ----
+function miniHyp(cv){
+  const ctx=cv.getContext('2d'); const W=cv.width=320,H=cv.height=158;
+  const e=0.1, TABN=1024; const xT=new Float64Array(TABN),yT=new Float64Array(TABN),g=new Float64Array(TABN),c2=new Float64Array(TABN),s2=new Float64Array(TABN);
+  for(let i=0;i<TABN;i++){ const M=TAU*i/TABN; let E=M; for(let k=0;k<8;k++)E-=(E-e*Math.sin(E)-M)/(1-e*Math.cos(E));
+    const r=1-e*Math.cos(E), f=Math.atan2(Math.sqrt(1-e*e)*Math.sin(E),Math.cos(E)-e);
+    xT[i]=r*Math.cos(f); yT[i]=r*Math.sin(f); g[i]=1/(r*r*r); c2[i]=Math.cos(2*f); s2[i]=Math.sin(2*f); }
+  const a2=0.89*0.89; const CX=W/2, CY=H/2, sc=Math.min(W,H)/2-18, fx=CX+e*sc, fy=CY;
+  function samp(t){ let ph=t/TAU; ph-=Math.floor(ph); const p=ph*TABN, i0=Math.floor(p)%TABN, fr=p-Math.floor(p), i1=(i0+1)%TABN, j=1-fr;
+    return {x:xT[i0]*j+xT[i1]*fr, y:yT[i0]*j+yT[i1]*fr, g:g[i0]*j+g[i1]*fr, c2:c2[i0]*j+c2[i1]*fr, s2:s2[i0]*j+s2[i1]*fr}; }
+  function acc(th,t){ const s=samp(t); return -0.5*a2*s.g*(Math.sin(2*th)*s.c2-Math.cos(2*th)*s.s2); }
+  let th=0.3,w=1.5,t=0; const dt=TAU/360;
+  let trail=[];
+  return ()=>{ for(let k=0;k<6;k++){ const a1=acc(th,t),w2=w+.5*dt*a1,a2_=acc(th+.5*dt*w,t+.5*dt),w3=w+.5*dt*a2_,a3=acc(th+.5*dt*w2,t+.5*dt),w4=w+dt*a3,a4=acc(th+dt*w3,t+dt);
+      th=th+dt/6*(w+2*w2+2*w3+w4); w=w+dt/6*(a1+2*a2_+2*a3+a4); t+=dt; }
+    ctx.fillStyle='#06070b'; ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle='#2a2a38'; ctx.lineWidth=1; ctx.beginPath();
+    for(let i=0;i<=TABN;i+=6){const ii=i%TABN; const X=fx+xT[ii]*sc,Y=fy-yT[ii]*sc; i?ctx.lineTo(X,Y):ctx.moveTo(X,Y);} ctx.closePath(); ctx.stroke();
+    // Saturn
+    ctx.fillStyle='#e9c878'; ctx.beginPath(); ctx.arc(fx,fy,8,0,TAU); ctx.fill();
+    ctx.save(); ctx.translate(fx,fy); ctx.rotate(-0.4); ctx.scale(1,0.32); ctx.strokeStyle='rgba(255,222,150,0.5)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(0,0,14,0,TAU); ctx.stroke(); ctx.restore();
+    // moon
+    const s=samp(t); const mx=fx+s.x*sc, my=fy-s.y*sc; trail.push([mx,my]); if(trail.length>40)trail.shift();
+    for(let i=0;i<trail.length;i++){ctx.fillStyle=`rgba(255,212,121,${0.05+0.12*i/trail.length})`;ctx.beginPath();ctx.arc(trail[i][0],trail[i][1],1.5,0,TAU);ctx.fill();}
+    ctx.save(); ctx.translate(mx,my); ctx.rotate(-th); ctx.fillStyle='#e9d5a6';
+    ctx.beginPath(); ctx.ellipse(0,0,11,5,0,0,TAU); ctx.fill();
+    ctx.strokeStyle='#3a2c12'; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(-11,0); ctx.lineTo(11,0); ctx.stroke(); ctx.restore(); };
+}
+
+const ticks=[ miniBif(document.getElementById('t-bif')),
+              miniCob(document.getElementById('t-cob')),
+              miniHyp(document.getElementById('t-hyp')) ];
+(function loop(){ for(const t of ticks) t(); requestAnimationFrame(loop); })();
+</script>
+</body>
+</html>
