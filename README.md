@@ -2,6 +2,8 @@
 
 **Chaos & nonlinear dynamics, in the browser.**
 
+[![The period-doubling road to chaos, a cobweb trajectory, and the chaotic tumbling of Saturn's moon Hyperion](demo.gif)](https://mikebertin.github.io/eris/)
+
 Three interactive demos of *deterministic chaos* — systems with no randomness whatsoever
 that are nonetheless impossible to predict — rebuilt from my undergraduate computational-physics
 coursework (PH30055, ~2011, originally written in Maple). No build step, no dependencies,
