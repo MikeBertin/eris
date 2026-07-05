@@ -6,7 +6,7 @@
 
 Three interactive demos of *deterministic chaos* — systems with no randomness whatsoever
 that are nonetheless impossible to predict — rebuilt from my undergraduate computational-physics
-coursework (PH30055, ~2011, originally written in Maple). No build step, no dependencies,
+coursework (~2011, originally written in Maple). No build step, no dependencies,
 no server: everything runs in the browser.
 
 🔗 **[Live site](https://mikebertin.github.io/eris/)**
