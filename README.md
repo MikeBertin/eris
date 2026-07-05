@@ -42,8 +42,14 @@ no server: everything runs in the browser.
   classifies the motion as regular or chaotic. The drawn moon's elongation tracks the
   asphericity α.
 
-Named for [Eris](https://en.wikipedia.org/wiki/Eris_(mythology)), the Greek goddess of strife
-and discord — and the dwarf planet besides.
+## The name
+
+**Eris** is the Greek goddess of strife and discord — the one who tosses in the golden Apple of
+Discord and lets chaos unravel from a single small perturbation. That's a fitting patron for a
+collection about *deterministic chaos*, where an imperceptible nudge to a starting value snowballs
+into wildly different outcomes. She's also the [dwarf planet](https://en.wikipedia.org/wiki/Eris_(dwarf_planet))
+whose discovery got Pluto reclassified — a nod to the celestial-mechanics half of the project, where
+Saturn's moon Hyperion tumbles without a fixed day.
 
 ## Running locally
 
