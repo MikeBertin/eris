@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌀</text></svg>">
-<title>Hyperion — The Tumbling Moon</title>
+<title>Hyperion: The Tumbling Moon</title>
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://mikebertin.github.io/eris/hyperion/">
-<meta property="og:title" content="Hyperion, the Tumbling Moon — Eris">
-<meta property="og:description" content="Saturn's moon Hyperion rotates chaotically — it has no fixed day. Simulate its spin-orbit dynamics and build the Poincaré section that proves the chaos. From the Eris chaos playground.">
+<meta property="og:title" content="Hyperion, the Tumbling Moon | Eris">
+<meta property="og:description" content="Saturn's moon Hyperion rotates chaotically, so it has no fixed day. Simulate its spin-orbit dynamics and build the Poincaré section that proves the chaos. From the Eris chaos playground.">
 <meta property="og:image" content="https://mikebertin.github.io/eris/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -111,9 +111,9 @@
 <div class="page">
   <header class="hero">
     <a class="back" href="../">← Eris</a>
-    <h1>Hyperion — The Tumbling Moon</h1>
+    <h1>Hyperion: The Tumbling Moon</h1>
     <p class="sub">
-      Saturn's moon <b>Hyperion</b> is shaped like a battered potato and rides a stretched orbit — and as a
+      Saturn's moon <b>Hyperion</b> is shaped like a battered potato and rides a stretched orbit, and as a
       result it has <b>no fixed day</b>. Its rotation is genuinely <span class="x" data-pop="chaos">chaotic</span>:
       gravity wrenches its long axis around unpredictably, tumbling end over end. Below, the moon orbits and
       spins on the left; on the right, a <span class="x" data-pop="poincare">Poincaré section</span> records its
@@ -124,7 +124,7 @@
   <div class="cols">
     <div class="col-left">
       <div class="stage"><canvas id="orbit"></canvas></div>
-      <div class="verdict"><span class="dot" id="vdot"></span><span id="vtext">—</span></div>
+      <div class="verdict"><span class="dot" id="vdot"></span><span id="vtext">…</span></div>
       <div class="panel">
         <div class="row">
           <button id="play" class="primary">Pause</button>
@@ -158,9 +158,9 @@
     <div class="col-right">
       <div class="panel">
         <div class="stats">
-          <div class="stat"><div class="k">Spin θ′ / n</div><div class="v" id="sSpin">—</div></div>
+          <div class="stat"><div class="k">Spin θ′ / n</div><div class="v" id="sSpin">…</div></div>
           <div class="stat"><div class="k">Orbits</div><div class="v" id="sOrb">0</div></div>
-          <div class="stat"><div class="k">Lyapunov λ</div><div class="v" id="sLam">—</div></div>
+          <div class="stat"><div class="k">Lyapunov λ</div><div class="v" id="sLam">…</div></div>
         </div>
       </div>
 
@@ -195,8 +195,8 @@
         <span class="x why" data-pop="tidal">Why most moons don't tumble</span>
       </div>
       <div class="ncard">
-        <h3>Voyager saw it for real</h3>
-        <p>This isn't a toy result — Hyperion's chaotic rotation was predicted in 1984 and confirmed by Voyager 2 and later Cassini imaging.</p>
+        <h3>Cassini saw it for real</h3>
+        <p>This isn't a toy result. Hyperion's chaotic rotation was predicted in 1984, and Cassini measured its real spin on close flybys in 2005.</p>
         <span class="x why" data-pop="real">The actual moon</span>
       </div>
     </div>
@@ -366,6 +366,34 @@ function drawOrbitScene(){
   ox.strokeStyle='#3a2c12'; ox.lineWidth=1.5; ox.beginPath(); ox.moveTo(-La,0); ox.lineTo(La,0); ox.stroke();
   ox.fillStyle='#2a1d04'; ox.beginPath(); ox.arc(La-3,0,2,0,TAU); ox.fill();
   ox.restore();
+  drawCloseUp(mx,my,fx,fy,La,Lb);
+}
+
+// close-up inset: the live moon magnified, so the tumble reads even when the orbit view is small.
+// The dashed line points at Saturn; a tidally locked moon would keep its long axis on that line.
+function drawCloseUp(mx,my,fx,fy,La,Lb){
+  const R0=46, ix=12+R0, iy=OS-12-R0, k=2.4;
+  ox.save();
+  ox.fillStyle='rgba(8,9,14,0.92)'; ox.strokeStyle='#2a2a38'; ox.lineWidth=1.2;
+  ox.beginPath(); ox.arc(ix,iy,R0,0,TAU); ox.fill(); ox.stroke();
+  ox.beginPath(); ox.arc(ix,iy,R0-1,0,TAU); ox.clip();
+  const toS=Math.atan2(fy-my,fx-mx);
+  ox.strokeStyle='rgba(255,222,150,0.4)'; ox.setLineDash([4,4]); ox.lineWidth=1.2;
+  ox.beginPath(); ox.moveTo(ix,iy); ox.lineTo(ix+Math.cos(toS)*R0,iy+Math.sin(toS)*R0); ox.stroke(); ox.setLineDash([]);
+  ox.translate(ix,iy); ox.rotate(-th);
+  const A=La*k, B=Lb*k;
+  const g=ox.createLinearGradient(-A,0,A,0); g.addColorStop(0,'#9a8a6a'); g.addColorStop(0.5,'#e9d5a6'); g.addColorStop(1,'#9a8a6a');
+  ox.fillStyle=g; ox.beginPath(); ox.ellipse(0,0,A,B,0,0,TAU); ox.fill();
+  ox.strokeStyle='rgba(60,45,20,0.6)'; ox.lineWidth=1; ox.stroke();
+  ox.strokeStyle='#3a2c12'; ox.lineWidth=2; ox.beginPath(); ox.moveTo(-A,0); ox.lineTo(A,0); ox.stroke();
+  ox.fillStyle='#2a1d04'; ox.beginPath(); ox.arc(A-6,0,3.5,0,TAU); ox.fill();
+  ox.restore();
+  // gold pointer on the rim: "Saturn is this way"
+  ox.save(); ox.translate(ix,iy); ox.rotate(toS);
+  ox.fillStyle='#e8c77a'; ox.beginPath(); ox.moveTo(R0+1,0); ox.lineTo(R0-8,-5); ox.lineTo(R0-8,5); ox.closePath(); ox.fill();
+  ox.restore();
+  ox.fillStyle='#5a6a80'; ox.font='10px ui-monospace,monospace'; ox.textAlign='center';
+  ox.fillText('close-up',ix,iy-R0-7); ox.textAlign='left';
 }
 
 function perihelionTick(){
@@ -400,9 +428,9 @@ function updateStats(){
   sSpin.textContent=spin.toFixed(2); sOrb.textContent=orbits;
   sLam.textContent=isFinite(lamEst)?lamEst.toFixed(3):'…';
   let col,msg;
-  if(!isFinite(lamEst)||sepOrbits<4){ col='#8a8a9c'; msg='Settling in — give it a few orbits to read the spin.'; }
-  else if(lamEst>0.02){ col='#ff6b8a'; msg='<b>Chaotic tumbling.</b> λ &gt; 0 — the orientation diverges; there is no repeating day.'; }
-  else { col='#9ae66e'; msg='<b>Regular spin.</b> λ ≈ 0 — the moon has locked into a steady rotation.'; }
+  if(!isFinite(lamEst)||sepOrbits<4){ col='#8a8a9c'; msg='Settling in. Give it a few orbits to read the spin.'; }
+  else if(lamEst>0.02){ col='#ff6b8a'; msg='<b>Chaotic tumbling.</b> λ &gt; 0: the orientation diverges and there is no repeating day.'; }
+  else { col='#9ae66e'; msg='<b>Regular spin.</b> λ ≈ 0: the moon has locked into a steady rotation.'; }
   vdot.style.background=col; vtext.innerHTML=msg;
 }
 
@@ -446,12 +474,12 @@ requestAnimationFrame(frame);
 // ===================== popovers =====================
 const POP={
   chaos:{title:'Chaotic rotation',html:`
-    <p>Most moons keep one face to their planet — a fixed rotation locked to the orbit. Hyperion can't: its
+    <p>Most moons keep one face to their planet, a fixed rotation locked to the orbit. Hyperion can't: its
        lumpy shape and stretched orbit make that locked state <b>unstable</b>. Tiny differences in orientation
        blow up, so the spin axis and rate wander unpredictably.</p>
-    <p class="muted">Deterministic equations, yet no long-term predictability — the hallmark of chaos.</p>`},
+    <p class="muted">Deterministic equations, yet no long-term predictability: the hallmark of chaos.</p>`},
   poincare:{title:'The Poincaré section',html:`
-    <p>Instead of watching the whole continuous motion, we take a snapshot once per orbit — at perihelion —
+    <p>Instead of watching the whole continuous motion, we take a snapshot once per orbit, at perihelion,
        and plot the orientation <b>θ</b> against the spin rate <b>θ′</b> (in units of the orbital mean
        motion n).</p>
     <p>A trajectory that returns to the same neighbourhood traces a <b>closed loop</b> (regular). One that
@@ -460,25 +488,25 @@ const POP={
   aspher:{title:'Asphericity α',html:`
     <p>How far from a sphere the moon is, through its principal moments of inertia A &lt; B &lt; C:</p>
     <div class="eq">α² = 3 (B − A) ⁄ C</div>
-    <p>α = 0 is a perfect sphere — no gravitational torque, so it spins forever at constant rate. The larger
+    <p>α = 0 is a perfect sphere with no gravitational torque, so it spins forever at constant rate. The larger
        α, the harder gravity can grab the long axis. Hyperion is an extreme α ≈ 0.89.</p>`},
   islands:{title:'Islands in a chaotic sea',html:`
-    <p>The mapped section splits into two worlds: <b>closed curves</b> — spin states locked into resonance
-       with the orbit (1:1, 3:2, 2:1…) — surrounded by a <b>grey haze</b> where a single trajectory fills a
+    <p>The mapped section splits into two worlds. <b>Closed curves</b> are spin states locked into resonance
+       with the orbit (1:1, 3:2, 2:1…). Around them lies a <b>grey haze</b> where a single trajectory fills a
        whole region.</p>
     <p class="muted">A moon caught in the haze tumbles chaotically; one trapped on a loop spins regularly.
        Hyperion's synchronous island has dissolved, which is why it tumbles.</p>`},
   tidal:{title:'Why most moons are calm',html:`
     <p>Lower the eccentricity and the orbital forcing weakens; lower α and the torque weakens. Either way the
        chaotic sea shrinks and the locked-rotation island grows until it fills the picture.</p>
-    <p class="muted">Our Moon, Io, Europa and most large satellites sit deep inside that island — round
+    <p class="muted">Our Moon, Io, Europa and most large satellites sit deep inside that island: round
        enough and circular enough that they're tidally locked, showing one face for billions of years.</p>`},
   real:{title:'The real Hyperion',html:`
-    <p>Hyperion is ~360 km across, one of the largest irregularly shaped bodies in the solar system — porous,
-       sponge-like, and decidedly not round. Its orbit (e ≈ 0.1) is nudged by a resonance with the big moon
+    <p>Hyperion is ~360 km along its longest axis, one of the largest irregularly shaped bodies in the solar system. It is porous,
+       sponge-like and decidedly not round. Its orbit (e ≈ 0.1) is nudged by a resonance with the big moon
        Titan.</p>
-    <p class="muted">Wisdom, Peale &amp; Mignard predicted the chaotic tumbling in 1984; Voyager 2 (1981) and
-       Cassini images confirmed a rotation that never settles. This simulation uses their spin-orbit model.</p>`},
+    <p class="muted">Wisdom, Peale &amp; Mignard predicted the chaotic tumbling in 1984. Cassini measured the real spin on close flybys in 2005,
+       and models built on that data confirm it is chaotic. This simulation uses the 1984 spin-orbit model.</p>`},
 };
 </script>
 

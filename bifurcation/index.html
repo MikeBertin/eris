@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌀</text></svg>">
-<title>Bifurcation Diagram — The Road to Chaos</title>
+<title>Bifurcation Diagram: The Road to Chaos</title>
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://mikebertin.github.io/eris/bifurcation/">
-<meta property="og:title" content="The Road to Chaos — Eris">
+<meta property="og:title" content="The Road to Chaos | Eris">
 <meta property="og:description" content="The period-doubling cascade of the map xₙ₊₁ = xₙ² − r. Zoom into the fractal tree and watch the Feigenbaum constant 4.669 emerge. From the Eris chaos playground.">
 <meta property="og:image" content="https://mikebertin.github.io/eris/og.png">
 <meta property="og:image:width" content="1200">
@@ -112,10 +112,10 @@
     <a class="back" href="../">← Eris</a>
     <h1>The Road to Chaos</h1>
     <p class="sub">
-      Iterate one line of arithmetic — <b>x → x² − r</b> — and ask where it settles.
+      Iterate one line of arithmetic, <b>x → x² − r</b>, and ask where it settles.
       For small <b>r</b> it lands on a single value; raise r and that value splits in two, then four,
       then eight, in a <span class="x" data-pop="pd">period-doubling cascade</span> that piles up into
-      <span class="x" data-pop="chaos">chaos</span>. <b>Drag a box to zoom</b> — the tree is a fractal, the same forks
+      <span class="x" data-pop="chaos">chaos</span>. <b>Drag a box to zoom</b>: the tree is a fractal, the same forks
       all the way down. Ported from my undergrad computational-physics coursework.
     </p>
   </header>
@@ -152,7 +152,7 @@
         <table class="feig" id="feigTbl"></table>
         <div class="hint">
           Each fork happens δ ≈ 4.669 times sooner than the last. That ratio is
-          <b style="color:var(--ink)">universal</b> — the same number governs dripping taps and
+          <b style="color:var(--ink)">universal</b>: the same number governs dripping taps and
           population models. Computed live from this map's super-stable points.
         </div>
       </div>
@@ -164,12 +164,12 @@
     <div class="notice-grid">
       <div class="ncard">
         <h3>It's a fractal</h3>
-        <p>Zoom into any fork and you find the whole tree again — branchings within branchings, self-similar without end.</p>
+        <p>Zoom into any fork and you find the whole tree again: branchings within branchings, self-similar without end.</p>
         <span class="x why" data-pop="selfsim">Why it repeats</span>
       </div>
       <div class="ncard">
         <h3>Windows of calm</h3>
-        <p>Deep in the chaotic smear, sharp white gaps open up — the system suddenly settles into a clean period-3 or -5 cycle, then shatters again.</p>
+        <p>Deep in the chaotic smear, sharp white gaps open up. The system suddenly settles into a clean period-3 or -5 cycle, then shatters again.</p>
         <span class="x why" data-pop="windows">The period-3 window</span>
       </div>
       <div class="ncard">
@@ -344,7 +344,7 @@ function computeFeigenbaum(){
   let html='<tr><th>fork</th><th>r</th><th>δ = ratio</th></tr>';
   rows.forEach(rw=>{
     html+=`<tr><td>2<sup>${rw.n}</sup>→2<sup>${rw.n+1}</sup></td><td>${rw.R.toFixed(5)}</td>`
-        + `<td class="d">${isFinite(rw.d)?rw.d.toFixed(4):'—'}</td></tr>`;
+        + `<td class="d">${isFinite(rw.d)?rw.d.toFixed(4):'…'}</td></tr>`;
   });
   html+=`<tr class="lim"><td colspan="2">limit δ →</td><td>4.6692</td></tr>`;
   tbl.innerHTML=html;
@@ -359,31 +359,31 @@ const POP={
     <p class="muted">Each split is a <b>bifurcation</b>. The cascade of them is the generic route a smooth
        system takes into chaos.</p>`},
   chaos:{title:'Deterministic chaos',html:`
-    <p>Past the cascade the orbit never repeats — it wanders over a whole band of values, yet the rule is
+    <p>Past the cascade the orbit never repeats. It wanders over a whole band of values, yet the rule is
        completely deterministic. Two starts a hair apart diverge exponentially: <b>sensitive dependence on
        initial conditions</b>.</p>
     <div class="eq">x<sub>n+1</sub> = x<sub>n</sub>² − r</div>
-    <p class="muted">No randomness anywhere — the unpredictability is baked into the arithmetic.</p>`},
+    <p class="muted">No randomness anywhere: the unpredictability is baked into the arithmetic.</p>`},
   feig:{title:"Feigenbaum's δ",html:`
     <p>Let r<sub>n</sub> be the r at which the period-2<sup>n</sup> cycle appears. The gaps between them
        shrink geometrically, and the ratio of successive gaps tends to a constant:</p>
     <div class="eq">δ = lim (r<sub>n</sub>−r<sub>n−1</sub>) ⁄ (r<sub>n+1</sub>−r<sub>n</sub>) = 4.6692…</div>
     <p class="muted"><b>Universal:</b> Mitchell Feigenbaum found the same number for <i>every</i> map with a
-       smooth hump — it doesn't care about the specific formula. A genuine constant of nature.</p>`},
+       smooth hump. It doesn't care about the specific formula. A genuine constant of nature.</p>`},
   selfsim:{title:'Self-similarity',html:`
     <p>The branch above each fork is a shrunken, distorted copy of the entire diagram. That's why zooming
-       keeps revealing the same forking tree — the structure is a <b>fractal</b>.</p>
+       keeps revealing the same forking tree: the structure is a <b>fractal</b>.</p>
     <p class="muted">The horizontal shrink factor per level is δ ≈ 4.669; the vertical one is Feigenbaum's
        second constant, α ≈ 2.503.</p>`},
   windows:{title:'Periodic windows',html:`
-    <p>Inside the chaos sit narrow bands where order suddenly returns — most visibly a <b>period-3</b>
+    <p>Inside the chaos sit narrow bands where order suddenly returns, most visibly a <b>period-3</b>
        window. Zoom into one and it has its <i>own</i> doubling cascade back into chaos.</p>
     <p class="muted">"Period three implies chaos" (Li &amp; Yorke, 1975): once a continuous map has a 3-cycle,
        it must have cycles of every length, and chaos too.</p>`},
   accum:{title:'The accumulation point',html:`
     <p>Because each doubling window is ~4.669× narrower than the last, the whole infinite cascade fits into
        a finite stretch of r and piles up at <b>r∞ ≈ 1.401</b> (marked in blue).</p>
-    <p class="muted">At exactly r∞ the orbit has period 2<sup>∞</sup> — it never repeats, but it isn't yet
+    <p class="muted">At exactly r∞ the orbit has period 2<sup>∞</sup>. It never repeats, but it isn't yet
        fully chaotic. The onset of chaos lives precisely here.</p>`},
 };
 

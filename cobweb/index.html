@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌀</text></svg>">
-<title>Cobweb & Lyapunov — Anatomy of an Orbit</title>
+<title>Cobweb & Lyapunov: Anatomy of an Orbit</title>
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://mikebertin.github.io/eris/cobweb/">
-<meta property="og:title" content="Anatomy of an Orbit — Eris">
+<meta property="og:title" content="Anatomy of an Orbit | Eris">
 <meta property="og:description" content="Trace a single trajectory of xₙ₊₁ = xₙ² − r as a cobweb, and read off the Lyapunov exponent that tells order from chaos. From the Eris chaos playground.">
 <meta property="og:image" content="https://mikebertin.github.io/eris/og.png">
 <meta property="og:image:width" content="1200">
@@ -110,7 +110,7 @@
     <p class="sub">
       The <a class="x" data-pop="cobweb" style="text-decoration:none">cobweb</a> on the left is a single
       trajectory of <b>x → x² − r</b>: bounce off the curve, across to the diagonal, repeat. Watch it spiral
-      into a fixed point, lock onto a cycle, or fill the whole interval. The
+      into a fixed point, lock onto a cycle or fill the whole interval. The
       <span class="x" data-pop="lyap">Lyapunov exponent</span> on the right turns that into one number:
       <b>negative = order, positive = chaos</b>.
     </p>
@@ -119,7 +119,7 @@
   <div class="cols">
     <div class="col-left">
       <div class="stage"><canvas id="c"></canvas></div>
-      <div class="verdict"><span class="dot" id="vdot"></span><span id="vtext">—</span></div>
+      <div class="verdict"><span class="dot" id="vdot"></span><span id="vtext">…</span></div>
     </div>
 
     <div class="col-right">
@@ -146,8 +146,8 @@
 
       <div class="panel">
         <div class="stats">
-          <div class="stat"><div class="k">Detected</div><div class="v" id="sPer">—</div></div>
-          <div class="stat"><div class="k">λ at this r</div><div class="v" id="sLam">—</div></div>
+          <div class="stat"><div class="k">Detected</div><div class="v" id="sPer">…</div></div>
+          <div class="stat"><div class="k">λ at this r</div><div class="v" id="sLam">…</div></div>
           <div class="stat"><div class="k">Step</div><div class="v" id="sN">0</div></div>
         </div>
       </div>
@@ -158,7 +158,7 @@
         <canvas id="lyap" width="360" height="200"></canvas>
         <div class="hint">
           Where λ dips below 0 (green) the orbit is periodic; where it pokes above 0 (red) it's chaotic.
-          The downward spikes inside the red are <b style="color:var(--ink)">periodic windows</b> — islands of
+          The downward spikes inside the red are <b style="color:var(--ink)">periodic windows</b>, islands of
           order. <kbd>Space</kbd> play/pause.
         </div>
       </div>
@@ -170,12 +170,12 @@
     <div class="notice-grid">
       <div class="ncard">
         <h3>Same r, same picture</h3>
-        <p>In the ordered regime, change x₀ to anything and the cobweb still ends on the same cycle — the start is forgotten.</p>
+        <p>In the ordered regime, change x₀ to anything and the cobweb still ends on the same cycle. The start is forgotten.</p>
         <span class="x why" data-pop="attractor">The attractor</span>
       </div>
       <div class="ncard">
         <h3>λ = 0 at every fork</h3>
-        <p>The Lyapunov curve just kisses zero at each period-doubling, then dives back down — order lost and regained.</p>
+        <p>The Lyapunov curve just kisses zero at each period-doubling, then dives back down: order lost and regained.</p>
         <span class="x why" data-pop="tangent">Why it touches zero</span>
       </div>
       <div class="ncard">
@@ -335,10 +335,10 @@ function updateVerdict(){
   const p=detectPeriod();
   let label, col, msg;
   if(!isFinite(lam)){ label='escapes'; col='#8a8a9c'; msg='Orbit runs off to infinity (r past 2).'; }
-  else if(lam>0.005){ label='chaotic'; col='#ff6b8a'; msg='<b>Chaos.</b> λ > 0 — nearby orbits diverge; the cobweb never repeats.'; }
+  else if(lam>0.005){ label='chaotic'; col='#ff6b8a'; msg='<b>Chaos.</b> λ > 0: nearby orbits diverge and the cobweb never repeats.'; }
   else if(p>0){ label=p===1?'fixed point':`period-${p}`; col='#9ae66e';
-    msg=`<b>Order.</b> λ < 0 — the orbit has settled onto a ${p===1?'single fixed point':p+'-cycle'}.`; }
-  else { label='settling'; col='#ffd479'; msg='Transient — converging onto a cycle (λ < 0).'; }
+    msg=`<b>Order.</b> λ < 0: the orbit has settled onto a ${p===1?'single fixed point':p+'-cycle'}.`; }
+  else { label='settling'; col='#ffd479'; msg='Transient: converging onto a cycle (λ < 0).'; }
   sPer.textContent=label;
   vdot.style.background=col;
   vtext.innerHTML=msg;
@@ -377,7 +377,7 @@ requestAnimationFrame(frame);
 // ---------------- popovers ----------------
 const POP={
   cobweb:{title:'Reading a cobweb',html:`
-    <p>Start at x₀ on the diagonal. Go <b>vertically</b> to the red curve — that height is the next value x₁.
+    <p>Start at x₀ on the diagonal. Go <b>vertically</b> to the red curve. That height is the next value x₁.
        Go <b>horizontally</b> to the diagonal to copy x₁ onto the x-axis. Repeat. The staircase or spiral you
        trace <i>is</i> the orbit.</p>
     <p class="muted">Spiralling inward → a stable point. A closed box → a cycle. Filling the square → chaos.</p>`},
@@ -389,19 +389,19 @@ const POP={
   lyapcurve:{title:'The λ(r) spectrum',html:`
     <p>λ computed for every r. It stays negative through the periodic regime, touching 0 at each fork, then
        climbs above 0 once chaos sets in around r ≈ 1.4.</p>
-    <p class="muted">The sharp <b>downward spikes</b> in the chaotic region are periodic windows — λ plunges
+    <p class="muted">The sharp <b>downward spikes</b> in the chaotic region are periodic windows: λ plunges
        negative because order briefly returns. The period-3 window near r ≈ 1.75 is the widest.</p>`},
   attractor:{title:'Forgetting the start',html:`
-    <p>When λ &lt; 0 the map has an <b>attractor</b> — a fixed point or cycle that pulls in every nearby start.
+    <p>When λ &lt; 0 the map has an <b>attractor</b>, a fixed point or cycle that pulls in every nearby start.
        Change x₀ and the transient looks different, but the destination is identical.</p>
     <p class="muted">Chaos kills this: with λ &gt; 0 the tiniest change in x₀ leads somewhere completely different.</p>`},
   tangent:{title:'λ = 0 at a bifurcation',html:`
     <p>A cycle is stable while |f′| &lt; 1 along it (λ &lt; 0) and loses stability exactly when |f′| = 1,
        i.e. λ = 0. That's the moment it splits in two.</p>
-    <p class="muted">So every tooth where the green curve touches the zero line is a period-doubling — the same
+    <p class="muted">So every tooth where the green curve touches the zero line is a period-doubling, the same
        forks you see in the bifurcation diagram.</p>`},
   edge:{title:'Sensitivity in the parameter',html:`
-    <p>Chaos means sensitive dependence on the <i>starting value</i> — but the map is also exquisitely
+    <p>Chaos means sensitive dependence on the <i>starting value</i>, but the map is also exquisitely
        sensitive to <b>r</b>. The boundary of a periodic window is razor-thin.</p>
     <p class="muted">This is why long-range weather or population forecasts are hard: you must know both the
        state <i>and</i> the parameters with impossible precision.</p>`},

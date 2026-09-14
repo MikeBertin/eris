@@ -2,10 +2,10 @@
 
 **Chaos & nonlinear dynamics, in the browser.**
 
-[![The period-doubling road to chaos, a cobweb trajectory, and the chaotic tumbling of Saturn's moon Hyperion](demo.gif)](https://mikebertin.github.io/eris/)
+[![The period-doubling road to chaos, a cobweb trajectory and the chaotic tumbling of Saturn's moon Hyperion](demo.gif)](https://mikebertin.github.io/eris/)
 
-Three interactive demos of *deterministic chaos* — systems with no randomness whatsoever
-that are nonetheless impossible to predict — rebuilt from my undergraduate computational-physics
+Three interactive demos of *deterministic chaos*: systems with no randomness whatsoever
+that are nonetheless impossible to predict. They are rebuilt from my undergraduate computational-physics
 coursework (~2011, originally written in Maple). No build step, no dependencies,
 no server: everything runs in the browser.
 
@@ -16,7 +16,7 @@ no server: everything runs in the browser.
 | | | |
 |---|---|---|
 | **[The Road to Chaos](bifurcation/)** | Period doubling | The bifurcation diagram of the map xₙ₊₁ = xₙ² − r. A single value forks into 2, 4, 8… in a period-doubling cascade. Box-zoom into the fractal tree; Feigenbaum's constant δ ≈ 4.669 is computed live from the map's super-stable points. |
-| **[Anatomy of an Orbit](cobweb/)** | Order vs chaos | A single trajectory drawn as a cobweb — spiralling to a fixed point, locking onto a cycle, or filling the interval — paired with the Lyapunov exponent λ(r). λ < 0 is order, λ > 0 is chaos; the periodic windows show up as downward spikes. |
+| **[Anatomy of an Orbit](cobweb/)** | Order vs chaos | A single trajectory drawn as a cobweb (spiralling to a fixed point, locking onto a cycle or filling the interval), paired with the Lyapunov exponent λ(r). λ < 0 is order, λ > 0 is chaos; the periodic windows show up as downward spikes. |
 | **[The Tumbling Moon](hyperion/)** | Celestial chaos | The chaotic rotation of Saturn's moon Hyperion, via the Wisdom–Peale–Mignard spin-orbit model. Watch the lumpy moon tumble as it orbits, and build the Poincaré section dot-by-dot to reveal the chaotic sea surrounding the regular resonance islands. |
 
 ## The physics
@@ -44,16 +44,16 @@ no server: everything runs in the browser.
 
 ## The name
 
-**Eris** is the Greek goddess of strife and discord — the one who tosses in the golden Apple of
+**Eris** is the Greek goddess of strife and discord, the one who tosses in the golden Apple of
 Discord and lets chaos unravel from a single small perturbation. That's a fitting patron for a
 collection about *deterministic chaos*, where an imperceptible nudge to a starting value snowballs
 into wildly different outcomes. She's also the [dwarf planet](https://en.wikipedia.org/wiki/Eris_(dwarf_planet))
-whose discovery got Pluto reclassified — a nod to the celestial-mechanics half of the project, where
+whose discovery got Pluto reclassified. That is a nod to the celestial-mechanics half of the project, where
 Saturn's moon Hyperion tumbles without a fixed day.
 
 ## Running locally
 
-It's all static files — open `index.html`, or serve the folder:
+It's all static files: open `index.html`, or serve the folder:
 
 ```sh
 python3 -m http.server 8731
