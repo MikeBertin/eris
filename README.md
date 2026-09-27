@@ -42,7 +42,7 @@ no server: everything runs in the browser.
   classifies the motion as regular or chaotic. The drawn moon's elongation tracks the
   asphericity α.
 
-## The name
+## Why Eris
 
 **Eris** is the Greek goddess of strife and discord, the one who tosses in the golden Apple of
 Discord and lets chaos unravel from a single small perturbation. That's a fitting patron for a
@@ -60,3 +60,7 @@ python3 -m http.server 8731
 ```
 
 Then visit <http://localhost:8731>.
+
+---
+
+<sub>Part of a collection of interactive builds · [mikebertin.github.io](https://mikebertin.github.io/)</sub>

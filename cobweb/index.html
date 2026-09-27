@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌀</text></svg>">
+<link rel="icon" href="../badge.svg" type="image/svg+xml">
 <title>Cobweb & Lyapunov: Anatomy of an Orbit</title>
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://mikebertin.github.io/eris/cobweb/">
@@ -100,6 +100,7 @@
   #pop .muted{color:var(--muted);font-size:12px}
   #pop .eq{font-family:var(--mono);background:#0e0e16;border:1px solid var(--line);border-radius:7px;
     padding:8px 10px;margin:9px 0;font-size:13px;text-align:center;color:#e6ebff}
+  @media (prefers-reduced-motion: reduce){*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
@@ -197,7 +198,12 @@ let lo=-2.1, hi=2.1;
 const mapX=v=>PAD+(v-lo)/(hi-lo)*(S-2*PAD);
 const mapY=v=>S-PAD-(v-lo)/(hi-lo)*(S-2*PAD);
 
-let r=1.62, x0=0.1, x=x0, n=0, running=true, perFrame=6;
+// Reduced motion: draw the first frame and wait for Play.
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let r=1.62, x0=0.1, x=x0, n=0, running=!REDUCED, perFrame=6;
+// Skip the work while the figure is scrolled out of view.
+let onScreen=true;
+new IntersectionObserver(es=>{ onScreen=es[0].isIntersecting; }).observe(cv);
 let orbit=[];                       // recent (x) values for period detection
 const f=v=>v*v-r;
 
@@ -346,7 +352,7 @@ function updateVerdict(){
 
 // ---------------- loop ----------------
 function frame(){
-  if(running){ for(let k=0;k<perFrame;k++) advance(); redraw(); sN.textContent=n;
+  if(running&&onScreen){ for(let k=0;k<perFrame;k++) advance(); redraw(); sN.textContent=n;
     if(n%6===0) updateVerdict(); }
   requestAnimationFrame(frame);
 }
@@ -369,6 +375,7 @@ document.getElementById('presets').onclick=e=>{ const b=e.target.closest('button
   setR(+b.dataset.r); running=true; document.getElementById('play').textContent='Pause'; };
 addEventListener('keydown',e=>{ if(e.code==='Space'){ e.preventDefault(); document.getElementById('play').click(); } });
 
+document.getElementById('play').textContent=running?'Pause':'Play';
 rV.textContent='r = '+r.toFixed(3); x0V.textContent='x₀ = '+x0.toFixed(2); spV.textContent=perFrame+' / frame';
 buildLyap();
 resetOrbit(); drawLyap(); updateVerdict();

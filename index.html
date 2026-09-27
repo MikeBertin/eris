@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌀</text></svg>">
+<link rel="icon" href="badge.svg" type="image/svg+xml">
 <title>Eris: A Chaos Playground</title>
 <meta name="description" content="Three interactive demos of deterministic chaos: the period-doubling road to chaos, the Lyapunov exponent and the chaotic tumbling of Saturn's moon Hyperion. Rebuilt from my undergrad computational-physics coursework.">
 <meta property="og:type" content="website">
@@ -69,6 +69,13 @@
   footer b{color:var(--ink);font-weight:600}
   footer a{color:var(--bif);text-decoration:none}
   footer a:hover{text-decoration:underline}
+  .hub{display:inline-flex;align-items:center;gap:6px}
+  .hub img{display:block}
+  .anim{display:block;margin:14px 0 0 auto;background:none;border:1px solid var(--line);border-radius:8px;
+    color:var(--muted);font:inherit;font-size:12px;padding:5px 11px;cursor:pointer}
+  .anim:hover{color:var(--ink);border-color:var(--muted)}
+  .anim:focus-visible{outline:2px solid var(--bif);outline-offset:2px}
+  @media (prefers-reduced-motion: reduce){*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
@@ -115,11 +122,13 @@
       </div>
     </a>
   </div>
+  <button class="anim" id="anim" type="button">Pause previews</button>
 
   <footer>
     <b>Eris</b> is named for the Greek goddess of strife and discord (and a dwarf planet besides).
     Built by Mike Bertin. Everything runs entirely in your browser; nothing is sent anywhere.
     <br>From my undergraduate computational-physics coursework, ~2011 · rebuilt 2026.
+    <br><span class="hub"><img src="badge.svg" alt="" width="13" height="16"> <a href="https://mikebertin.github.io/">More builds by Mike Bertin</a></span>
   </footer>
 </div>
 
@@ -198,7 +207,19 @@ function miniHyp(cv){
 const ticks=[ miniBif(document.getElementById('t-bif')),
               miniCob(document.getElementById('t-cob')),
               miniHyp(document.getElementById('t-hyp')) ];
-(function loop(){ for(const t of ticks) t(); requestAnimationFrame(loop); })();
+// The previews animate only while playing, on screen and in a visible tab.
+// With reduced motion they draw one frame and wait for the Play button.
+const animBtn=document.getElementById('anim');
+let playing=!matchMedia('(prefers-reduced-motion: reduce)').matches, onScreen=true, raf=0;
+function loop(){ raf=0; if(!playing||!onScreen||document.hidden) return;
+  for(const t of ticks) t(); raf=requestAnimationFrame(loop); }
+function kick(){ if(!raf) raf=requestAnimationFrame(loop); }
+function setPlaying(p){ playing=p; animBtn.textContent=p?'Pause previews':'Play previews'; kick(); }
+animBtn.onclick=()=>setPlaying(!playing);
+new IntersectionObserver(es=>{ onScreen=es[0].isIntersecting; kick(); }).observe(document.querySelector('.grid'));
+document.addEventListener('visibilitychange',kick);
+for(const t of ticks) t();   // one frame, so a paused preview is not blank
+setPlaying(playing);
 </script>
 </body>
 </html>

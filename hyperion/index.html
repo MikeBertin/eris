@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌀</text></svg>">
+<link rel="icon" href="../badge.svg" type="image/svg+xml">
 <title>Hyperion: The Tumbling Moon</title>
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://mikebertin.github.io/eris/hyperion/">
@@ -105,6 +105,7 @@
   #pop .muted{color:var(--muted);font-size:12px}
   #pop .eq{font-family:var(--mono);background:#0e0e16;border:1px solid var(--line);border-radius:7px;
     padding:8px 10px;margin:9px 0;font-size:12.5px;text-align:center;color:#e6ebff}
+  @media (prefers-reduced-motion: reduce){*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
@@ -435,8 +436,14 @@ function updateStats(){
 }
 
 // ===================== loop =====================
-let running=true;
+// Reduced motion: draw the first frame and wait for Play.
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let running=!REDUCED;
+// Skip the work while the figures are scrolled out of view.
+let onScreen=true;
+new IntersectionObserver(es=>{ onScreen=es[0].isIntersecting; }).observe(document.querySelector('.cols'));
 function frame(){
+  if(!onScreen){ requestAnimationFrame(frame); return; }
   if(running){ for(let k=0;k<perFrame;k++) stepLive(); }
   runJobs();
   drawOrbitScene();
@@ -467,6 +474,7 @@ document.getElementById('presets').onclick=e=>{ const b=e.target.closest('button
   rebuild(false); resetMoon(+b.dataset.w); running=true; document.getElementById('play').textContent='Pause'; };
 addEventListener('keydown',e=>{ if(e.code==='Space'){ e.preventDefault(); document.getElementById('play').click(); } });
 
+document.getElementById('play').textContent=running?'Pause':'Play';
 eV.textContent='e = '+ecc.toFixed(3); aV.textContent='α = 0.89'; spV.textContent=perFrame+'×';
 buildTables(); setScale(); drawSecAxes(); resetMoon(1.5);
 requestAnimationFrame(frame);
